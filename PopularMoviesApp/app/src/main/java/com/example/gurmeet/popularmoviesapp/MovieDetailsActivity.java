@@ -25,11 +25,7 @@ public class MovieDetailsActivity extends ActionBarActivity {
             String strMovieUserRating = movieIntent.getStringExtra("movieUserRating");
             String strMovieReleaseDate = movieIntent.getStringExtra("movieReleaseDate");
             String strMoviePlot = movieIntent.getStringExtra("moviePlot");
-            Log.e("Movie_APP_2", strMovieTitle);
-            Log.e("Movie_APP_2", strMoviePosterFullPath);
-            Log.e("Movie_APP_2", strMovieUserRating);
-            Log.e("Movie_APP_2", strMovieReleaseDate);
-            Log.e("Movie_APP_2", strMoviePlot);
+            
 
             ImageView moviePosterImageView = (ImageView) findViewById(R.id.imageView_moviePoster);
             Picasso.with(this).load(strMoviePosterFullPath).into(moviePosterImageView);

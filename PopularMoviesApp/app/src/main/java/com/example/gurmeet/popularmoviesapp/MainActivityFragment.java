@@ -3,8 +3,13 @@ package com.example.gurmeet.popularmoviesapp;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Movie;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -45,7 +51,8 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     PopularMovieAdapter mMovieAdapter = null;
     GridView moviePostersGrid = null;
     String mSortQuery = null;
-
+    static final String SORT_QUERY = "sort_query";
+    static final String MOVIE_DETAILS_LIST = "MovieDetailObjectsArrayList";
     public MainActivityFragment() {
     }
 
@@ -64,15 +71,40 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         //Set Click listener for GridView items
         moviePostersGrid.setOnItemClickListener(this);
 
-        //Temporarily fill mMovieDetailsArrayList for first time view
-        MovieDetailsObject obj = new MovieDetailsObject(
-                "http://image.tmdb.org/t/p/w185//nBNZadXqJSdt05SHLqgT0HuC5Gm.jpg", "Intersteller",
-                "PLOT", "5/5", "03Aug2015");
-        mMovieDetailsArrayList = new ArrayList<MovieDetailsObject>();
-        mSortQuery = "popularity.desc";
-
         setHasOptionsMenu(true);
         return rootView;
+    }
+
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        //Get the sort query type from savedInstanceState (if available)
+        if((savedInstanceState!= null) && (savedInstanceState.containsKey(SORT_QUERY))) {
+            mSortQuery = savedInstanceState.getString(SORT_QUERY);
+        } else {
+            mSortQuery = "popularity.desc";
+        }
+
+        //Get the MovieDetailsArrayList from the savedInstanceState (if available)
+        if((savedInstanceState != null) && savedInstanceState.containsKey(MOVIE_DETAILS_LIST) ) {
+            mMovieDetailsArrayList = savedInstanceState.getParcelableArrayList(MOVIE_DETAILS_LIST);
+
+        } else {
+            mMovieDetailsArrayList = new ArrayList<MovieDetailsObject>();
+            //Fetch movie details and update the GridView with movie posters
+            updateMovieGridView();
+        }
+
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putString(SORT_QUERY, mSortQuery);
+        outState.putParcelableArrayList(MOVIE_DETAILS_LIST, mMovieDetailsArrayList);
+
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -82,21 +114,40 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     @Override
     public void onStart() {
         super.onStart();
-        //Fetch movie details and update the GridView with movie posters
-        updateMovieGridView();
     }
 
-    public void updateMovieGridView()
-    {
-        FetchMovieDetails movieDetails = new FetchMovieDetails();
-        movieDetails.execute();
-
+    public void updateMovieGridView() {
+        //Check if network is available and fetch the movie details from TMDB
+        if (isNetworkAvailable()) {
+            FetchMovieDetails movieDetails = new FetchMovieDetails();
+            movieDetails.execute();
+        }
+        else{
+        //If network is not available inform the user to restroe the network connection
+            Toast toastNoConnection = Toast.makeText(getActivity(), "Please restore the network " +
+                    "connection and press \"Refresh\" menu item.", Toast.LENGTH_LONG);
+            toastNoConnection.show();
+        }
     }
+
+    //This method checks if network connection is available or not
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectionManager = (ConnectivityManager) getActivity()
+                .getSystemService(getActivity().CONNECTIVITY_SERVICE);
+        NetworkInfo ntwkInfo = connectionManager.getActiveNetworkInfo();
+        return ((ntwkInfo != null) && ntwkInfo.isConnected());
+    }
+
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_sort_by_popularity) {
+        if (id == R.id.action_refresh) {
+            updateMovieGridView();
+            return true;
+        }
+        else if (id == R.id.action_sort_by_popularity) {
             mSortQuery = "popularity.desc";
             updateMovieGridView();
             return true;
@@ -112,8 +163,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.v("MOVIE_APP_4", "In OnItemClick" );
-
         Intent movieIntent = new Intent(getActivity(), MovieDetailsActivity.class);
         PopularMovieAdapter.ViewHolder holder = (PopularMovieAdapter.ViewHolder)view.getTag();
         MovieDetailsObject movieDetails = (MovieDetailsObject) holder.movieImageView.getTag();
@@ -128,7 +177,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     //MovieDetailsObject holds the movie details like MoviePosterFullPath,
     //MovieTitle, MoviePlot, UserRating, ReleaseData etc.
-    public class MovieDetailsObject {
+    public class MovieDetailsObject implements Parcelable {
 
         String m_strMoviePosterFullPath, m_strMovieTitle, m_strMoviePlot = null;
         String m_strMovieUserRating, m_strMovieReleaseDate = null;
@@ -143,6 +192,49 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             m_strMovieUserRating = movieUserRating;
             m_strMovieReleaseDate = movieReleaseDate;
         }
+
+        private MovieDetailsObject(Parcel parcel)
+        {
+            Log.v("GS_TAG", "In Parcabel function");
+            m_strMoviePosterFullPath = parcel.readString();
+            m_strMovieTitle = parcel.readString();
+            m_strMoviePlot = parcel.readString();
+            m_strMovieUserRating = parcel.readString();
+            m_strMovieReleaseDate = parcel.readString();
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(m_strMoviePosterFullPath);
+            dest.writeString(m_strMovieTitle);
+            dest.writeString(m_strMoviePlot);
+            dest.writeString(m_strMovieUserRating);
+            dest.writeString(m_strMovieReleaseDate);
+        }
+
+        public final Parcelable.Creator<MovieDetailsObject> CREATOR = new Parcelable.ClassLoaderCreator<MovieDetailsObject>(){
+
+            @Override
+            public MovieDetailsObject createFromParcel(Parcel source) {
+                return new MovieDetailsObject(source);
+            }
+
+            @Override
+            public MovieDetailsObject[] newArray(int size) {
+                return new MovieDetailsObject[size];
+            }
+
+            @Override
+            public MovieDetailsObject createFromParcel(Parcel source, ClassLoader loader) {
+                return null;
+            }
+        };
+
     }
 
     //FetchMovieDetails class to fetch the movie details using TMDB APIs
@@ -163,7 +255,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
 
-                String api_Key = "<API_KEY_GOES_HERE>";
+                String api_Key = "API_KEY_GOES_HERE";
 
 
                 Uri builtURI = Uri.parse(BASE_URL).buildUpon()
@@ -174,7 +266,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 URL url = new URL(builtURI.toString());
 
                 Log.v(LOG_TAG, "BuildURL:" + url);
-
+            if(isNetworkAvailable()) {
 
                 //Create the request to TheMovieDB and open the connection
                 urlConnection = (HttpURLConnection) url.openConnection();
@@ -204,6 +296,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                     return null;
                 }
                 movieDBJSONString = buffer.toString();
+            }
 
 
             } catch (IOException e) {
@@ -211,7 +304,9 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 return null;
             } finally {
                 try {
-                    reader.close();
+                    if(reader != null) {
+                        reader.close();
+                    }
                 } catch (final IOException e) {
                     Log.e(LOG_TAG, "Error closing reader stream ", e);
                 }
@@ -231,6 +326,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
             return null;
         }
+
 
         @Override
         protected void onPostExecute(Object result) {

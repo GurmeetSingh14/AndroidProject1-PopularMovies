@@ -47,10 +47,14 @@ import java.util.ArrayList;
  */
 public class MainActivityFragment extends Fragment implements AdapterView.OnItemClickListener {
 
-    ArrayList<MovieDetailsObject> mMovieDetailsArrayList = null;
-    PopularMovieAdapter mMovieAdapter = null;
-    GridView moviePostersGrid = null;
-    String mSortQuery = null;
+    private ArrayList<MovieDetailsObject> mMovieDetailsArrayList = null;
+    private PopularMovieAdapter mMovieAdapter = null;
+    private GridView moviePostersGrid = null;
+    private String mSortQuery = null;
+
+//    private ArrayList<MovieTrailersObject> mMovieTrailerObject = null;
+//    private ArrayList<MovieReviewsObject> mMovieReviewObject = null;
+
     static final String SORT_QUERY = "sort_query";
     static final String MOVIE_DETAILS_LIST = "MovieDetailObjectsArrayList";
     public MainActivityFragment() {
@@ -163,17 +167,36 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Intent movieIntent = new Intent(getActivity(), MovieDetailsActivity.class);
+        Log.e("GS_APP_1", Integer.toString(mMovieDetailsArrayList.get(position).m_nMovieId));
+
+//        FetchMovieTrailersAndReviews movie = new FetchMovieTrailersAndReviews();
+//        movie.execute(mMovieDetailsArrayList.get(position).m_nMovieId);
+
+        Intent movieIntent = new Intent(getActivity(), MovieDetailActivity.class);
         PopularMovieAdapter.ViewHolder holder = (PopularMovieAdapter.ViewHolder)view.getTag();
         MovieDetailsObject movieDetails = (MovieDetailsObject) holder.movieImageView.getTag();
+
+
         movieIntent.putExtra("movieTitle", movieDetails.m_strMovieTitle);
         movieIntent.putExtra("moviePosterFullPath", movieDetails.m_strMoviePosterFullPath);
         movieIntent.putExtra("movieUserRating", movieDetails.m_strMovieUserRating);
         movieIntent.putExtra("movieReleaseDate", movieDetails.m_strMovieReleaseDate);
         movieIntent.putExtra("moviePlot", movieDetails.m_strMoviePlot);
+        movieIntent.putExtra("movieId", movieDetails.m_nMovieId);
+        Log.e("GS_DETAIL_IN", Integer.toString(movieDetails.m_nMovieId));
+/*        Log.e("GS_APP_DETAIL_IN", Integer.toString(mMovieTrailerObject.size()));
+        Log.e("GS_APP_DETAIL_IN", Integer.toString(mMovieReviewObject.size()));
 
+
+        movieIntent.putParcelableArrayListExtra("mMovieTrailerObject", mMovieTrailerObject);
+        movieIntent.putParcelableArrayListExtra("mMovieReviewObject", mMovieReviewObject);*/
         startActivity(movieIntent);
     }
+
+
+
+
+
 
     //MovieDetailsObject holds the movie details like MoviePosterFullPath,
     //MovieTitle, MoviePlot, UserRating, ReleaseData etc.
@@ -181,16 +204,18 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
         String m_strMoviePosterFullPath, m_strMovieTitle, m_strMoviePlot = null;
         String m_strMovieUserRating, m_strMovieReleaseDate = null;
+        int m_nMovieId;
 
 
         MovieDetailsObject(String moviePosterFullPath, String movieTitle, String moviePlot,
-                           String movieUserRating, String movieReleaseDate)
+                           String movieUserRating, String movieReleaseDate, int movieId)
         {
             m_strMoviePosterFullPath = moviePosterFullPath;
             m_strMovieTitle = movieTitle;
             m_strMoviePlot = moviePlot;
             m_strMovieUserRating = movieUserRating;
             m_strMovieReleaseDate = movieReleaseDate;
+            m_nMovieId = movieId;
         }
 
         private MovieDetailsObject(Parcel parcel)
@@ -201,6 +226,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             m_strMoviePlot = parcel.readString();
             m_strMovieUserRating = parcel.readString();
             m_strMovieReleaseDate = parcel.readString();
+            m_nMovieId = parcel.readInt();
         }
 
         @Override
@@ -215,6 +241,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             dest.writeString(m_strMoviePlot);
             dest.writeString(m_strMovieUserRating);
             dest.writeString(m_strMovieReleaseDate);
+            dest.writeInt(m_nMovieId);
         }
 
         public final Parcelable.Creator<MovieDetailsObject> CREATOR = new Parcelable.ClassLoaderCreator<MovieDetailsObject>(){
@@ -237,6 +264,15 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     }
 
+
+
+
+
+
+
+
+
+
     //FetchMovieDetails class to fetch the movie details using TMDB APIs
     public class FetchMovieDetails extends AsyncTask {
 
@@ -255,7 +291,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
 
-                String api_Key = "API_KEY_GOES_HERE";
+                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
 
 
                 Uri builtURI = Uri.parse(BASE_URL).buildUpon()
@@ -346,6 +382,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             final String TMDB_PLOT = "overview";
             final String TMDB_USER_RATING = "vote_average";
             final String TMDB_RELEASE_DATE = "release_date";
+            final String TMDB_MOVIE_ID = "id";
 
             JSONObject movieDBJSONObject = new JSONObject(movieDBJSONString);
             JSONArray movieDBArray = movieDBJSONObject.getJSONArray(TMDB_RESULTS);
@@ -353,6 +390,8 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             String posterBasePath = "http://image.tmdb.org/t/p/w500/";
             String movie_title, movie_poster_path, movie_plot = null;
             String movie_user_rating, movie_release_date = null;
+            int movie_id = 0;
+
             ImageView posterImageView = null;
             int length = movieDBArray.length();
             mMovieDetailsArrayList.clear();
@@ -367,8 +406,12 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 movie_plot = movieInfo.getString(TMDB_PLOT);
                 movie_user_rating = movieInfo.getString(TMDB_USER_RATING);
                 movie_release_date = movieInfo.getString(TMDB_RELEASE_DATE);
+                movie_id = movieInfo.getInt(TMDB_MOVIE_ID);
+
+                Log.e("GS_APP", "Movie ID: " + Integer.toString(movie_id));
+
                 MovieDetailsObject movie = new MovieDetailsObject(movie_poster_path, movie_title,
-                        movie_plot, movie_user_rating, movie_release_date);
+                        movie_plot, movie_user_rating, movie_release_date, movie_id);
                 mMovieDetailsArrayList.add(movie);
             }
 

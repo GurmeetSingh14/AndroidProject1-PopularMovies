@@ -7,6 +7,9 @@
     <string name ="action_sort_by_user_rating">Sort By User Rating</string>
     <string name ="action_sort_by_poplarity">Sort By Popularity</string>
     <string name ="action_refersh">Refresh</string>
+    <string name="title_activity_movie_detail">MovieDetailActivity</string>
+
+    <string name="action_share">Share</string>
 
 
 </resources>

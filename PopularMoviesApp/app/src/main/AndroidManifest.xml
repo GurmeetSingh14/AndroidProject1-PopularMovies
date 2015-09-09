@@ -3,7 +3,7 @@
     package="com.example.gurmeet.popularmoviesapp" >
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="true"
@@ -20,8 +20,8 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MovieDetailsActivity"
-            android:label="@string/title_activity_movie_details" >
+            android:name=".MovieDetailActivity"
+            android:label="@string/title_activity_movie_detail" >
         </activity>
     </application>
 

@@ -10,4 +10,7 @@
 
     <item android:id="@+id/action_sort_by_user_rating" android:title="@string/action_sort_by_user_rating"
         android:orderInCategory="100" app:showAsAction="never" />
+
+    <item android:id="@+id/action_my_favorite_movies" android:title="@string/action_my_favorite_movies"
+        android:orderInCategory="100" app:showAsAction="never" />
 </menu>

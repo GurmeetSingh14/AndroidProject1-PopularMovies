@@ -2,6 +2,8 @@ package com.example.gurmeet.popularmoviesapp;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Movie;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -26,6 +28,8 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.gurmeet.popularmoviesapp.data.MovieAppContract;
+import com.example.gurmeet.popularmoviesapp.data.MovieDbHelper;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -51,11 +55,17 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     private PopularMovieAdapter mMovieAdapter = null;
     private GridView moviePostersGrid = null;
     private String mSortQuery = null;
+    private static final int MENU_SELECTED_POPULARITY = 1;
+    private static final int MENU_SELECTED_RATING = 2;
+    private static final int MENU_SELECTED_FAVORITE = 3;
+    private int mMenuSelection = 0;
 
+    private static MovieDbHelper m_FavoriteMovieDbHelper = null;
 //    private ArrayList<MovieTrailersObject> mMovieTrailerObject = null;
 //    private ArrayList<MovieReviewsObject> mMovieReviewObject = null;
 
     static final String SORT_QUERY = "sort_query";
+    static final String MENU_SELECTION = "menu_selection";
     static final String MOVIE_DETAILS_LIST = "MovieDetailObjectsArrayList";
     public MainActivityFragment() {
     }
@@ -75,6 +85,10 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         //Set Click listener for GridView items
         moviePostersGrid.setOnItemClickListener(this);
 
+        if(m_FavoriteMovieDbHelper == null) {
+            m_FavoriteMovieDbHelper = new MovieDbHelper(getActivity());
+        }
+
         setHasOptionsMenu(true);
         return rootView;
     }
@@ -87,6 +101,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         //Get the sort query type from savedInstanceState (if available)
         if((savedInstanceState!= null) && (savedInstanceState.containsKey(SORT_QUERY))) {
             mSortQuery = savedInstanceState.getString(SORT_QUERY);
+            mMenuSelection = Integer.parseInt(savedInstanceState.getString(MENU_SELECTION));
         } else {
             mSortQuery = "popularity.desc";
         }
@@ -94,11 +109,17 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         //Get the MovieDetailsArrayList from the savedInstanceState (if available)
         if((savedInstanceState != null) && savedInstanceState.containsKey(MOVIE_DETAILS_LIST) ) {
             mMovieDetailsArrayList = savedInstanceState.getParcelableArrayList(MOVIE_DETAILS_LIST);
-
+            Log.e("GS_APP_DB", "Retrieved Saved Movies 1 :" + mMovieDetailsArrayList.size());
         } else {
             mMovieDetailsArrayList = new ArrayList<MovieDetailsObject>();
+            Log.e("GS_APP_DB", "Retrieved Saved Movies 2 :" + mMovieDetailsArrayList.size());
+
             //Fetch movie details and update the GridView with movie posters
-            updateMovieGridView();
+            if(mMenuSelection == MENU_SELECTED_FAVORITE){
+                fetchFavoriteMoviesFromDB();
+            } else {
+                updateMovieGridView();
+            }
         }
 
     }
@@ -106,8 +127,9 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putString(SORT_QUERY, mSortQuery);
+        outState.putString(MENU_SELECTION, Integer.toString(mMenuSelection));
         outState.putParcelableArrayList(MOVIE_DETAILS_LIST, mMovieDetailsArrayList);
-
+        Log.e("GS_APP_DB", "Saving Movies :" + mMovieDetailsArrayList.size());
         super.onSaveInstanceState(outState);
     }
 
@@ -134,10 +156,15 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         }
     }
 
+    private void fetchFavoriteMoviesFromDB() {
+
+        FetchFavoriteMovieDetailsFromDB movieDetailsFromDB = new FetchFavoriteMovieDetailsFromDB();
+        movieDetailsFromDB.execute();
+    }
     //This method checks if network connection is available or not
     private boolean isNetworkAvailable() {
         ConnectivityManager connectionManager = (ConnectivityManager) getActivity()
-                .getSystemService(getActivity().CONNECTIVITY_SERVICE);
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo ntwkInfo = connectionManager.getActiveNetworkInfo();
         return ((ntwkInfo != null) && ntwkInfo.isConnected());
     }
@@ -152,13 +179,20 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             return true;
         }
         else if (id == R.id.action_sort_by_popularity) {
+            mMenuSelection = MENU_SELECTED_POPULARITY;
             mSortQuery = "popularity.desc";
             updateMovieGridView();
             return true;
         }
         else if (id == R.id.action_sort_by_user_rating) {
+            mMenuSelection = MENU_SELECTED_RATING;
             mSortQuery = "vote_average.desc";
             updateMovieGridView();
+            return true;
+        }
+        else if (id == R.id.action_my_favorite_movies) {
+            mMenuSelection = MENU_SELECTED_FAVORITE;
+            fetchFavoriteMoviesFromDB();
             return true;
         }
 
@@ -266,7 +300,58 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
 
 
+ public class FetchFavoriteMovieDetailsFromDB extends AsyncTask {
 
+     @Override
+     protected ArrayList<MovieDetailsObject> doInBackground(Object[] params) {
+
+         SQLiteDatabase db = m_FavoriteMovieDbHelper.getReadableDatabase();
+         Cursor cursor = db.query(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
+                 new String[] {MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID,
+                         MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH,
+                         MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_TITLE,
+                         MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_PLOT,
+                         MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_USER_RATING,
+                         MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE},
+                null,
+                null,
+                null,
+                null,
+                null);
+
+         cursor.moveToFirst();
+         Log.e("GS_APP_DB", "Main Activity::Favorite Movies Count " + Integer.toString(cursor.getCount()));
+
+         mMovieDetailsArrayList.clear();
+        do {
+            MovieDetailsObject movie = new MovieDetailsObject(
+                    cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH)),
+                    cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_TITLE)),
+                    cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_PLOT)),
+                    cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_USER_RATING)),
+                    cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE)),
+                    Integer.parseInt(cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID))));
+
+
+            mMovieDetailsArrayList.add(movie);
+        } while (cursor.moveToNext());
+
+         cursor.close();
+         db.close();
+
+         return mMovieDetailsArrayList;
+     }
+
+     @Override
+     protected void onPostExecute(Object result) {
+         if(result != null){
+             Log.e("GS_APP_DB", "MoveDetailsArrayList Size is: " + Integer.toString(mMovieDetailsArrayList.size()));
+             for(int i = 0; i < mMovieDetailsArrayList.size(); ++i) {
+                 mMovieAdapter.add(mMovieDetailsArrayList.get(i));
+             }
+         }
+     }
+ }
 
 
 
@@ -291,12 +376,12 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
 
-                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
+                String api_Key = "API_KEY_GOES_HERE";
 
 
                 Uri builtURI = Uri.parse(BASE_URL).buildUpon()
-                        .appendQueryParameter(SORT_PARAM, (String) mSortQuery)
-                        .appendQueryParameter(APIKEY_PARAM, (String) api_Key)
+                        .appendQueryParameter(SORT_PARAM, mSortQuery)
+                        .appendQueryParameter(APIKEY_PARAM, api_Key)
                         .build();
 
                 URL url = new URL(builtURI.toString());

@@ -1,0 +1,24 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:divider="?android:attr/dividerHorizontal"
+    android:orientation="horizontal"
+    tools:context="com.example.gurmeet.popularmoviesapp.app.MainActivity">
+
+<fragment
+    android:id="@+id/movie_main_fragment"
+    android:name="com.example.gurmeet.popularmoviesapp.MainActivityFragment"
+    tools:layout="@layout/movie_main_fragment"
+    android:layout_width="0dp"
+    android:layout_weight="2"
+    android:layout_height="match_parent" />
+
+<FrameLayout
+    android:id="@+id/fragment_movie_detail"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:layout_weight="4" />
+
+</LinearLayout>

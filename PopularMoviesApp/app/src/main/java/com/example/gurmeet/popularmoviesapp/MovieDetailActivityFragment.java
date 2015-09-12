@@ -77,6 +77,9 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     private String m_strMovieReleaseDate;
     private String m_strMoviePlot;
 
+    private String m_strTrailerName, m_strTrailerSource, m_strTrailerType;
+    String m_strReviewAuthor, m_strReviewContent, m_strReviewURL;
+
     private static MovieDbHelper m_FavoriteMovieDbHelper = null;
 
     MovieTrailersReviewsObject mMovieTrailersReviewsObject = null;
@@ -210,9 +213,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         SQLiteDatabase db = m_FavoriteMovieDbHelper.getWritableDatabase();
 
         ContentValues favorite_movie_values = getFavoriteMovieValues();
+        ContentValues favorite_movie_trailer_values = getFavoriteMovieTrailerValues();
+        ContentValues favorite_movie_review_values = getFavoriteMovieReviewsValues();
 
         long rowID;
         rowID = db.insert(MovieAppContract.MovieDetailsEntry.TABLE_NAME,null, favorite_movie_values);
+        db.insert(MovieAppContract.MovieTrailerEntry.TABLE_NAME, null, favorite_movie_trailer_values);
+        db.insert(MovieAppContract.MovieReviewsEntry.TABLE_NAME, null, favorite_movie_review_values);
+
 
         // Query the database and receive a Cursor back
 
@@ -237,6 +245,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         long rowID;
         rowID = db.delete(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
+                MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
+                new String[] { Integer.toString(m_nMovieId)});
+
+        db.delete(MovieAppContract.MovieTrailerEntry.TABLE_NAME,
+                MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
+                new String[] { Integer.toString(m_nMovieId)});
+
+        db.delete(MovieAppContract.MovieReviewsEntry.TABLE_NAME,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[] { Integer.toString(m_nMovieId)});
         Log.e("GS_APP_DB", "Deleted " + rowID + " rows");
@@ -280,6 +296,26 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         return contentValues;
     }
 
+    private ContentValues getFavoriteMovieTrailerValues() {
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(MovieAppContract.MovieTrailerEntry.COLUMN_MOVIE_KEY, m_nMovieId);
+        contentValues.put(MovieAppContract.MovieTrailerEntry.COLUMN_TRAILER_NAME, m_strTrailerName);
+        contentValues.put(MovieAppContract.MovieTrailerEntry.COLUMN_TRAILER_TYPE, m_strTrailerType);
+        contentValues.put(MovieAppContract.MovieTrailerEntry.COLUMN_TRAILER_SOURCE, m_strTrailerSource);
+
+        return contentValues;
+    }
+
+    private ContentValues getFavoriteMovieReviewsValues() {
+        ContentValues contentValues = new ContentValues();
+
+        contentValues.put(MovieAppContract.MovieReviewsEntry.COLUMN_MOVIE_KEY, m_nMovieId);
+        contentValues.put(MovieAppContract.MovieReviewsEntry.COLUMN_REVIEW_AUTHOR, m_strReviewAuthor);
+        contentValues.put(MovieAppContract.MovieReviewsEntry.COLUMN_REVIEW_CONTENT, m_strReviewContent);
+        contentValues.put(MovieAppContract.MovieReviewsEntry.COLUMN_REVIEW_URL, m_strReviewURL);
+        return contentValues;
+    }
     private Intent createShareTrailerIntent() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
@@ -588,7 +624,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                 String APIKEY_PARAM = "api_key";
                 String APPEND_PARAM = "append_to_response";
 
-                String api_Key = "API_KEY_GOES_HERE";
+                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
                 String appendTrailersReviews = "trailers,reviews";
 
 
@@ -706,7 +742,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         JSONArray movieDBYouTubeTrailersArray = movieDBTrailersObject.getJSONArray(TMDB_YOUTUBE);
 
         int movieYouTubeTrailersArrayLength = movieDBYouTubeTrailersArray.length();
-        String m_strTrailerName, m_strTrailerSource, m_strTrailerType;
+
 
         for(int i = 0; i < movieYouTubeTrailersArrayLength; ++i) {
             JSONObject movieYouTubeTrailer = movieDBYouTubeTrailersArray.getJSONObject(i);
@@ -724,7 +760,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         JSONArray movieDBReviewResultsArray = movieDBReviewssObject.getJSONArray(TMDB_RESULTS);
 
         int movieReviewsArrayLength = movieDBReviewResultsArray.length();
-        String m_strReviewAuthor, m_strReviewContent, m_strReviewURL;
+
 
         for(int i = 0; i < movieReviewsArrayLength; ++i) {
             JSONObject movieReview = movieDBReviewResultsArray.getJSONObject(i);

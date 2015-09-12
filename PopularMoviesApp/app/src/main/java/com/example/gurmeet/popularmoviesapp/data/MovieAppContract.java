@@ -37,7 +37,6 @@ public class MovieAppContract {
 
         public static final String TABLE_NAME = "movie_reviews";
 
-        public static final String COLUMN_REVIEW_ID = "review_id";
         public static final String COLUMN_REVIEW_AUTHOR = "review_author";
         public static final String COLUMN_REVIEW_CONTENT = "review_content";
         public static final String COLUMN_REVIEW_URL = "review_url";

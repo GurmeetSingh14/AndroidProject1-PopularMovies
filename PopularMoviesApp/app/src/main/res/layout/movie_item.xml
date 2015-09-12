@@ -8,5 +8,5 @@
         android:layout_height="wrap_content"
         android:id="@+id/imageView_item"
         android:layout_gravity="center"
-        android:src="@drawable/movie_poster1"/>
+        />
 </LinearLayout>

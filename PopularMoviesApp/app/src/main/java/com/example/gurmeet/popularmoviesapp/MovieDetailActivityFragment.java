@@ -85,6 +85,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     MovieTrailersReviewsObject mMovieTrailersReviewsObject = null;
 
     ShareActionProvider mShareActionProvider = null;
+    static final String DETAIL_URI = "URI";
 
     public MovieDetailActivityFragment() {
         setHasOptionsMenu(true);
@@ -96,8 +97,11 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
-        Intent movieIntent = getActivity().getIntent();
-
+        Bundle arguments = getArguments();
+        Intent movieIntent = null;
+        if (arguments != null) {
+            movieIntent = arguments.getParcelable(DETAIL_URI);
+        }
 
         if(movieIntent != null){
 
@@ -108,8 +112,11 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             m_strMoviePlot = movieIntent.getStringExtra("moviePlot");
             m_nMovieId = movieIntent.getIntExtra("movieId", 0);
 
+            Log.e("GS_APP_PATH", m_strMoviePosterFullPath);
             ImageView moviePosterImageView = (ImageView) rootView.findViewById(R.id.imageView_moviePoster);
-            Picasso.with(getActivity()).load(m_strMoviePosterFullPath).into(moviePosterImageView);
+            Picasso.with(getActivity()).load(m_strMoviePosterFullPath)
+                    .error(R.drawable.placeholder_poster)
+                    .into(moviePosterImageView);
 
             TextView movieTitleTextView = (TextView)rootView.findViewById(R.id.textView_movieTitle);
             movieTitleTextView.setText(m_strMovieTitle);
@@ -339,7 +346,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
 
         if(mShareActionProvider != null) {
-            mShareActionProvider.setShareIntent(createShareTrailerIntent());
+            //mShareActionProvider.setShareIntent(createShareTrailerIntent());
         } else {
             Log.e(LOG_TAG, "NULL share action provider");
         }
@@ -439,37 +446,12 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             return position;
         }
 
-
-        class ViewHolder {
-
-            TextView trailerNameTextView;
-            TextView trailerTypeTextView;
-            ViewHolder(View v)
-            {
-                trailerNameTextView = (TextView) v.findViewById(R.id.textview_movie_trailer_name);
-                trailerTypeTextView = (TextView) v.findViewById(R.id.textview_movie_trailer_type);
-            }
-        }
-
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.movie_trailer_item, parent, false);
-            /*ViewHolder holder = null;
-            if(row == null){
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                row = inflater.inflate(R.layout.movie_item, parent, false);
-                holder = new ViewHolder(row);
-                row.setTag(holder);
-            }
-            else {
-                holder = (ViewHolder)row.getTag();
-            }*/
             MovieTrailersObject tempMovieTrailerObject = mMovieTrailerObject.get(position);
-            /*holder.trailerNameTextView.setTag(tempMovieTrailerObject.m_strTrailerName);
-            holder.trailerTypeTextView.setTag(tempMovieTrailerObject.m_strTrailerType);
-*/
             TextView trailerName = (TextView)row.findViewById(R.id.textview_movie_trailer_name);
             trailerName.setText(tempMovieTrailerObject.m_strTrailerName);
 
@@ -508,37 +490,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             return position;
         }
 
-
-        class ViewHolder {
-
-            TextView trailerNameTextView;
-            TextView trailerTypeTextView;
-            ViewHolder(View v)
-            {
-                trailerNameTextView = (TextView) v.findViewById(R.id.textview_movie_trailer_name);
-                trailerTypeTextView = (TextView) v.findViewById(R.id.textview_movie_trailer_type);
-            }
-        }
-
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.movie_review_item, parent, false);
-            /*ViewHolder holder = null;
-            if(row == null){
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                row = inflater.inflate(R.layout.movie_item, parent, false);
-                holder = new ViewHolder(row);
-                row.setTag(holder);
-            }
-            else {
-                holder = (ViewHolder)row.getTag();
-            }*/
+
             MovieReviewsObject tempMovieReviewsObject = mMovieReviewObject.get(position);
-            /*holder.trailerNameTextView.setTag(tempMovieTrailerObject.m_strTrailerName);
-            holder.trailerTypeTextView.setTag(tempMovieTrailerObject.m_strTrailerType);
-*/
+
             TextView reviewContent = (TextView)row.findViewById(R.id.textViewReview);
             reviewContent.setText(tempMovieReviewsObject.m_strReviewContent);
 

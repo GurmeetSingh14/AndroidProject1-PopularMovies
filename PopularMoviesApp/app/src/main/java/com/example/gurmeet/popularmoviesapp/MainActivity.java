@@ -8,10 +8,25 @@ import android.view.MenuItem;
 
 public class MainActivity extends ActionBarActivity {
 
+    public boolean mTwoPaneLayout;
+    private static final String MOVIEDETAIL_FRAGMENT_TAG = "DETAILTAG";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Check to see if this is 2 pane layout
+        if(findViewById(R.id.movie_detail_container) != null){
+            mTwoPaneLayout = true;
+
+            if (savedInstanceState == null) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.movie_detail_container, new MovieDetailActivityFragment(), MOVIEDETAIL_FRAGMENT_TAG)
+                        .commit();
+            }
+        } else {
+            mTwoPaneLayout = false;
+        }
     }
 
 

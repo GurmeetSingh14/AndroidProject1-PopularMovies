@@ -63,8 +63,11 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     static final String SORT_QUERY = "sort_query";
     static final String MENU_SELECTION = "menu_selection";
     static final String MOVIE_DETAILS_LIST = "MovieDetailObjectsArrayList";
+    private static final String MOVIEDETAIL_FRAGMENT_TAG = "DETAILTAG";
+    private boolean mTowPaneLayout = false;
 
     public MainActivityFragment() {
+
     }
 
     @Override
@@ -117,6 +120,13 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             } else {
                 updateMovieGridView();
             }
+        }
+
+        MainActivity main_activity = (MainActivity)getActivity();
+
+
+        if (main_activity.mTwoPaneLayout) {
+            mTowPaneLayout = true;
         }
 
     }
@@ -197,14 +207,9 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Log.e("GS_APP_1", Integer.toString(mMovieDetailsArrayList.get(position).m_nMovieId));
 
-//        FetchMovieTrailersAndReviews movie = new FetchMovieTrailersAndReviews();
-//        movie.execute(mMovieDetailsArrayList.get(position).m_nMovieId);
-
         Intent movieIntent = new Intent(getActivity(), MovieDetailActivity.class);
-        PopularMovieAdapter.ViewHolder holder = (PopularMovieAdapter.ViewHolder) view.getTag();
-        MovieDetailsObject movieDetails = (MovieDetailsObject) holder.movieImageView.getTag();
 
-
+        MovieDetailsObject movieDetails = (MovieDetailsObject)mMovieDetailsArrayList.get(position);
         movieIntent.putExtra("movieTitle", movieDetails.m_strMovieTitle);
         movieIntent.putExtra("moviePosterFullPath", movieDetails.m_strMoviePosterFullPath);
         movieIntent.putExtra("movieUserRating", movieDetails.m_strMovieUserRating);
@@ -212,13 +217,24 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         movieIntent.putExtra("moviePlot", movieDetails.m_strMoviePlot);
         movieIntent.putExtra("movieId", movieDetails.m_nMovieId);
         Log.e("GS_DETAIL_IN", Integer.toString(movieDetails.m_nMovieId));
-/*        Log.e("GS_APP_DETAIL_IN", Integer.toString(mMovieTrailerObject.size()));
-        Log.e("GS_APP_DETAIL_IN", Integer.toString(mMovieReviewObject.size()));
 
 
-        movieIntent.putParcelableArrayListExtra("mMovieTrailerObject", mMovieTrailerObject);
-        movieIntent.putParcelableArrayListExtra("mMovieReviewObject", mMovieReviewObject);*/
-        startActivity(movieIntent);
+        if (mTowPaneLayout) {
+            // In two-pane mode, show the detail view in this activity by
+            // adding or replacing the detail fragment using a
+            // fragment transaction.
+            Bundle args = new Bundle();
+            args.putParcelable(MovieDetailActivityFragment.DETAIL_URI, movieIntent);
+
+            MovieDetailActivityFragment fragment = new MovieDetailActivityFragment();
+            fragment.setArguments(args);
+
+            getActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.movie_detail_container, fragment, MOVIEDETAIL_FRAGMENT_TAG)
+                    .commit();
+        } else {
+            startActivity(movieIntent);
+        }
     }
 
 
@@ -339,7 +355,9 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             }
             MovieDetailsObject tempMovieObject = mMovieDetailsArrayList.get(position);
             holder.movieImageView.setTag(tempMovieObject);
-            Picasso.with(getActivity()).load(tempMovieObject.m_strMoviePosterFullPath).into(holder.movieImageView);
+            Picasso.with(getActivity()).load(tempMovieObject.m_strMoviePosterFullPath)
+                    .error(R.drawable.placeholder_poster)
+                    .into(holder.movieImageView);
 
             return row;
         }
@@ -462,7 +480,15 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         JSONObject movieDBJSONObject = new JSONObject(movieDBJSONString);
         JSONArray movieDBArray = movieDBJSONObject.getJSONArray(TMDB_RESULTS);
 
-        String posterBasePath = "http://image.tmdb.org/t/p/w500/";
+        String posterBasePath;
+
+        if(mTowPaneLayout){
+            posterBasePath = "http://image.tmdb.org/t/p/w185/";
+        } else {
+            posterBasePath = "http://image.tmdb.org/t/p/w500/";
+        }
+
+
         String movie_title, movie_poster_path, movie_plot = null;
         String movie_user_rating, movie_release_date = null;
         int movie_id = 0;

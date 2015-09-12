@@ -16,7 +16,7 @@
     android:layout_height="match_parent" />
 
 <FrameLayout
-    android:id="@+id/fragment_movie_detail"
+    android:id="@+id/movie_detail_container"
     android:layout_width="0dp"
     android:layout_height="match_parent"
     android:layout_weight="4" />

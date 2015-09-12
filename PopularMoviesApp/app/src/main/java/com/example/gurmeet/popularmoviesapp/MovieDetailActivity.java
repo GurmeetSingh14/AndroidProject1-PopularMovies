@@ -13,7 +13,7 @@ public class MovieDetailActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_movie_detail);
 
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             Bundle arguments = new Bundle();
             arguments.putParcelable(MovieDetailActivityFragment.DETAIL_URI, getIntent());
 
@@ -25,7 +25,6 @@ public class MovieDetailActivity extends ActionBarActivity {
                     .commit();
         }
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -41,11 +40,6 @@ public class MovieDetailActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        return id == R.id.action_settings || super.onOptionsItemSelected(item);
     }
 }

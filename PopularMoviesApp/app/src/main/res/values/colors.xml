@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="movie_item_pressed_green">#2e9982</color>
+    <color name="movie_item_activtivated_green">#5ac7b3</color>
+
+</resources>

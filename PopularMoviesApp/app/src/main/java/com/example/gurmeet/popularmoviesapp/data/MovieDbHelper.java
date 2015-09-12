@@ -3,7 +3,6 @@ package com.example.gurmeet.popularmoviesapp.data;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Movie;
 
 import com.example.gurmeet.popularmoviesapp.data.MovieAppContract.MovieDetailsEntry;
 import com.example.gurmeet.popularmoviesapp.data.MovieAppContract.MovieReviewsEntry;

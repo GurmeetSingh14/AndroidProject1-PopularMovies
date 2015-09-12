@@ -29,6 +29,7 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.support.v7.widget.ShareActionProvider;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.gurmeet.popularmoviesapp.data.MovieAppContract;
 import com.example.gurmeet.popularmoviesapp.data.MovieDbHelper;
@@ -37,7 +38,6 @@ import com.squareup.picasso.Picasso;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,23 +51,20 @@ import java.util.ArrayList;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MovieDetailActivityFragment extends Fragment implements AdapterView.OnItemClickListener{
+public class MovieDetailActivityFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private ArrayList<MovieTrailersObject> mMovieTrailerObject = null;
     private ArrayList<MovieReviewsObject> mMovieReviewObject = null;
 
-    private ListView mMovieTrailerListView = null;
-    private ListView mMovieReviewListView = null;
-
     private MovieTrailerAdapter mMovieTrailerAdapter = null;
     private MovieReviewAdapter mMovieReviewAdapter = null;
-    int m_nMovieId;
+    private int m_nMovieId;
 
     private static final String LOG_TAG = MovieDetailActivityFragment.class.getSimpleName();
     private static final String SHARE_INTENT_STRING_BASE = "Checkout the %s trailer at: " +
             " https://www.youtube.com/watch?v=%s #PopularMovieApp";
 
-    ImageButton m_favButton;
+    private ImageButton m_favButton;
     private static boolean m_bFavoriteEnabled = false;
 
     private String m_strMovieTitle;
@@ -78,13 +75,13 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     private String m_strMoviePlot;
 
     private String m_strTrailerName, m_strTrailerSource, m_strTrailerType;
-    String m_strReviewAuthor, m_strReviewContent, m_strReviewURL;
+    private String m_strReviewAuthor, m_strReviewContent, m_strReviewURL;
 
     private static MovieDbHelper m_FavoriteMovieDbHelper = null;
 
-    MovieTrailersReviewsObject mMovieTrailersReviewsObject = null;
+    private MovieTrailersReviewsObject mMovieTrailersReviewsObject = null;
 
-    ShareActionProvider mShareActionProvider = null;
+    private ShareActionProvider mShareActionProvider = null;
     static final String DETAIL_URI = "URI";
 
     public MovieDetailActivityFragment() {
@@ -94,7 +91,6 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         View rootView = inflater.inflate(R.layout.fragment_movie_detail, container, false);
 
         Bundle arguments = getArguments();
@@ -103,7 +99,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             movieIntent = arguments.getParcelable(DETAIL_URI);
         }
 
-        if(movieIntent != null){
+        if (movieIntent != null) {
 
             m_strMovieTitle = movieIntent.getStringExtra("movieTitle");
             m_strMoviePosterFullPath = movieIntent.getStringExtra("moviePosterFullPath");
@@ -112,33 +108,31 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             m_strMoviePlot = movieIntent.getStringExtra("moviePlot");
             m_nMovieId = movieIntent.getIntExtra("movieId", 0);
 
-            Log.e("GS_APP_PATH", m_strMoviePosterFullPath);
             ImageView moviePosterImageView = (ImageView) rootView.findViewById(R.id.imageView_moviePoster);
             Picasso.with(getActivity()).load(m_strMoviePosterFullPath)
-                    .error(R.drawable.placeholder_poster)
+                    .error(R.drawable.placeholder_poster_small)
                     .into(moviePosterImageView);
 
-            TextView movieTitleTextView = (TextView)rootView.findViewById(R.id.textView_movieTitle);
+            TextView movieTitleTextView = (TextView) rootView.findViewById(R.id.textView_movieTitle);
             movieTitleTextView.setText(m_strMovieTitle);
 
-            TextView movieUserRatingTextView = (TextView)rootView.findViewById(R.id.textView_movieRating);
+            TextView movieUserRatingTextView = (TextView) rootView.findViewById(R.id.textView_movieRating);
             movieUserRatingTextView.setText(m_strMovieUserRating);
 
-            TextView movieReleaseDateTextView = (TextView)rootView.findViewById(R.id.textView_movieReleaseDate);
+            TextView movieReleaseDateTextView = (TextView) rootView.findViewById(R.id.textView_movieReleaseDate);
             movieReleaseDateTextView.setText(m_strMovieReleaseDate);
 
-            TextView moviePlotTextView = (TextView)rootView.findViewById(R.id.textView_moviePlot);
+            TextView moviePlotTextView = (TextView) rootView.findViewById(R.id.textView_moviePlot);
             moviePlotTextView.setText(m_strMoviePlot);
 
             mMovieTrailerObject = new ArrayList<MovieTrailersObject>();
             mMovieReviewObject = new ArrayList<MovieReviewsObject>();
 
-            Log.e("GS_DETAIL", Integer.toString(m_nMovieId));
             FetchMovieTrailersAndReviews movie = new FetchMovieTrailersAndReviews();
             movie.execute(m_nMovieId);
 
             //Set adapter for MovieTrailerListView
-            mMovieTrailerListView = (ListView) rootView.findViewById(R.id.listview_movie_trailers);
+            ListView mMovieTrailerListView = (ListView) rootView.findViewById(R.id.listview_movie_trailers);
             mMovieTrailerAdapter = new MovieTrailerAdapter(getActivity(), R.layout.movie_trailer_item);
             mMovieTrailerListView.setAdapter(mMovieTrailerAdapter);
 
@@ -151,13 +145,12 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                 }
             });
 
-
-            if(m_FavoriteMovieDbHelper == null) {
+            if (m_FavoriteMovieDbHelper == null) {
                 m_FavoriteMovieDbHelper = new MovieDbHelper(getActivity());
             }
 
             //Set adapter for MovieReviewsListView
-            mMovieReviewListView = (ListView) rootView.findViewById(R.id.listview_movie_reviews);
+            ListView mMovieReviewListView = (ListView) rootView.findViewById(R.id.listview_movie_reviews);
             mMovieReviewAdapter = new MovieReviewAdapter(getActivity(), R.layout.movie_review_item);
             mMovieReviewListView.setAdapter(mMovieReviewAdapter);
 
@@ -173,27 +166,26 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
             m_bFavoriteEnabled = isFavoriteMovie();
             setFavoriteIcon(rootView);
-
-
-
-            //Fix of Scroll Issue when ListView is present in the layout
-            //For More info, checkout below link:
-            //http://stackoverflow.com/questions/4119441/how-to-scroll-to-top-of-long-scrollview-layout
-
-            ScrollView detail_scrollview = (ScrollView) rootView.findViewById(R.id.scrollView);
-            detail_scrollview.smoothScrollTo(0,0);
-
-
         }
-
         return rootView;
     }
 
-    private void setFavoriteIcon(View view) {
 
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        //Fix of Scroll Issue when ListView is present in the layout
+        //For More info, checkout below link:
+        //http://stackoverflow.com/questions/4119441/how-to-scroll-to-top-of-long-scrollview-layout
+        ScrollView detail_scrollview = (ScrollView) view.findViewById(R.id.scrollView);
+        detail_scrollview.smoothScrollTo(0, 0);
+    }
+
+    private void setFavoriteIcon(View view) {
         m_favButton = (ImageButton) view.findViewById(R.id.imageButton_favourite);
 
-        if(m_bFavoriteEnabled) {
+        if (m_bFavoriteEnabled) {
             m_favButton.setImageResource(R.drawable.fav_enabled);
         } else {
             m_favButton.setImageResource(R.drawable.fav_normal);
@@ -216,32 +208,16 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     }
 
     private void insertFavoriteMovieDetailsToDB() {
-
         SQLiteDatabase db = m_FavoriteMovieDbHelper.getWritableDatabase();
 
         ContentValues favorite_movie_values = getFavoriteMovieValues();
         ContentValues favorite_movie_trailer_values = getFavoriteMovieTrailerValues();
         ContentValues favorite_movie_review_values = getFavoriteMovieReviewsValues();
-
-        long rowID;
-        rowID = db.insert(MovieAppContract.MovieDetailsEntry.TABLE_NAME,null, favorite_movie_values);
+        //Insert Favorite Movie details, trailers and review information to database
+        db.insert(MovieAppContract.MovieDetailsEntry.TABLE_NAME, null, favorite_movie_values);
         db.insert(MovieAppContract.MovieTrailerEntry.TABLE_NAME, null, favorite_movie_trailer_values);
         db.insert(MovieAppContract.MovieReviewsEntry.TABLE_NAME, null, favorite_movie_review_values);
 
-
-        // Query the database and receive a Cursor back
-
-        Cursor cursor = db.query(MovieAppContract.MovieDetailsEntry.TABLE_NAME, null, null,
-                null, null,null, null);
-
-        cursor.moveToFirst();
-        Log.e("GS_APP_DB", "Cursor Row Count :" + Integer.toString(cursor.getCount()));
-
-        for (int i = 0; i < cursor.getColumnCount(); ++i) {
-            Log.e("GS_APP_DB", "Cursor Value : " + cursor.getString(i));
-        }
-
-        cursor.close();
         db.close();
     }
 
@@ -250,19 +226,17 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         SQLiteDatabase db = m_FavoriteMovieDbHelper.getWritableDatabase();
 
-        long rowID;
-        rowID = db.delete(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
+        db.delete(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
-                new String[] { Integer.toString(m_nMovieId)});
+                new String[]{Integer.toString(m_nMovieId)});
 
         db.delete(MovieAppContract.MovieTrailerEntry.TABLE_NAME,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
-                new String[] { Integer.toString(m_nMovieId)});
+                new String[]{Integer.toString(m_nMovieId)});
 
         db.delete(MovieAppContract.MovieReviewsEntry.TABLE_NAME,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
-                new String[] { Integer.toString(m_nMovieId)});
-        Log.e("GS_APP_DB", "Deleted " + rowID + " rows");
+                new String[]{Integer.toString(m_nMovieId)});
 
         db.close();
     }
@@ -277,10 +251,8 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                 + Integer.toString(m_nMovieId);
 
         Cursor cursor = db.rawQuery(sqliteQuery, null);
-        //Cursor cursor = db.query(MovieAppContract.MovieDetailsEntry.TABLE_NAME, new String [] {MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID},
-        //        Integer.toString(m_nMovieId), null, null, null, null);
 
-        if(cursor.getCount() > 0) {
+        if (cursor.getCount() > 0) {
             bFavoriteMovie = true;
             Log.e("GS_APP_DB", "This movie is my favorite !!");
         }
@@ -290,7 +262,8 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         return bFavoriteMovie;
     }
-    private  ContentValues getFavoriteMovieValues(){
+
+    private ContentValues getFavoriteMovieValues() {
         ContentValues contentValues = new ContentValues();
 
         contentValues.put(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID, m_nMovieId);
@@ -323,17 +296,16 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         contentValues.put(MovieAppContract.MovieReviewsEntry.COLUMN_REVIEW_URL, m_strReviewURL);
         return contentValues;
     }
+
     private Intent createShareTrailerIntent() {
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
         shareIntent.setType("text/plain");
-
-        if(mMovieTrailerObject.size() != 0) {
-
+        if (mMovieTrailerObject != null && mMovieTrailerObject.size() > 0) {
             mPopularMovieStr = String.format(SHARE_INTENT_STRING_BASE, m_strMovieTitle
-                    ,(mMovieTrailerObject.get(0)).m_strTrailerSource);
+                    , (mMovieTrailerObject.get(0)).m_strTrailerSource);
         }
-        //mPopularMovieStr = "Test Message";
+
         shareIntent.putExtra(Intent.EXTRA_TEXT, mPopularMovieStr);
         return shareIntent;
     }
@@ -345,8 +317,8 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         MenuItem menuItem = menu.findItem(R.id.action_share);
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
 
-        if(mShareActionProvider != null) {
-            //mShareActionProvider.setShareIntent(createShareTrailerIntent());
+        if (mShareActionProvider != null) {
+            mShareActionProvider.setShareIntent(createShareTrailerIntent());
         } else {
             Log.e(LOG_TAG, "NULL share action provider");
         }
@@ -354,12 +326,13 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
     }
 
     public class MovieTrailersReviewsObject {
+        @SuppressWarnings("CanBeFinal")
+        final
         ArrayList<MovieTrailersObject> m_movieTrailerObject;
-        ArrayList<MovieReviewsObject> m_movieReviewsObjet;
+        final ArrayList<MovieReviewsObject> m_movieReviewsObjet;
 
         MovieTrailersReviewsObject(ArrayList<MovieTrailersObject> trailers, ArrayList<MovieReviewsObject> reviews) {
             m_movieTrailerObject = trailers;
@@ -378,7 +351,6 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             m_strTrailerSource = trailerSource;
             m_strTrailerType = trailerType;
         }
-
 
         private MovieTrailersObject(Parcel parcel) {
             m_strTrailerName = parcel.readString();
@@ -418,10 +390,9 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     }
 
 
-
     //Movie Adapter class for GridView
     public class MovieTrailerAdapter extends ArrayAdapter<MovieTrailersObject> {
-        private Context mContext;
+        private final Context mContext;
         private int mImageCount;
 
         public MovieTrailerAdapter(Context context, int resource) {
@@ -429,17 +400,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             mContext = context;
         }
 
-
         @Override
         public int getCount() {
             int count = 0;
-            if(mMovieTrailerObject != null){
+            if (mMovieTrailerObject != null) {
                 count = mMovieTrailerObject.size();
             }
-            Log.e("GS_DETAIL", "Item Count is: " + Integer.toString(count));
             return count;
         }
-
 
         @Override
         public long getItemId(int position) {
@@ -448,14 +416,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View row = convertView;
+            View row;
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.movie_trailer_item, parent, false);
             MovieTrailersObject tempMovieTrailerObject = mMovieTrailerObject.get(position);
-            TextView trailerName = (TextView)row.findViewById(R.id.textview_movie_trailer_name);
+            TextView trailerName = (TextView) row.findViewById(R.id.textview_movie_trailer_name);
             trailerName.setText(tempMovieTrailerObject.m_strTrailerName);
 
-            TextView trailerType = (TextView)row.findViewById(R.id.textview_movie_trailer_type);
+            TextView trailerType = (TextView) row.findViewById(R.id.textview_movie_trailer_type);
             trailerType.setText(tempMovieTrailerObject.m_strTrailerType);
 
             return row;
@@ -465,7 +433,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
     //Movie Adapter class for GridView
     public class MovieReviewAdapter extends ArrayAdapter<MovieReviewsObject> {
-        private Context mContext;
+        private final Context mContext;
         private int mImageCount;
 
         public MovieReviewAdapter(Context context, int resource) {
@@ -473,17 +441,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             mContext = context;
         }
 
-
         @Override
         public int getCount() {
             int count = 0;
-            if(mMovieReviewObject != null){
+            if (mMovieReviewObject != null) {
                 count = mMovieReviewObject.size();
             }
-            Log.e("GS_DETAIL", "Item Count is: " + Integer.toString(count));
             return count;
         }
-
 
         @Override
         public long getItemId(int position) {
@@ -492,21 +457,20 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            View row = convertView;
+            View row;
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             row = inflater.inflate(R.layout.movie_review_item, parent, false);
 
             MovieReviewsObject tempMovieReviewsObject = mMovieReviewObject.get(position);
 
-            TextView reviewContent = (TextView)row.findViewById(R.id.textViewReview);
+            TextView reviewContent = (TextView) row.findViewById(R.id.textViewReview);
             reviewContent.setText(tempMovieReviewsObject.m_strReviewContent);
 
-            TextView reviewAuthor = (TextView)row.findViewById(R.id.textViewAuthor);
+            TextView reviewAuthor = (TextView) row.findViewById(R.id.textViewAuthor);
             reviewAuthor.setText("Reviewed By: " + tempMovieReviewsObject.m_strReviewAuthor);
 
-            TextView reviewURL = (TextView)row.findViewById(R.id.textViewURL);
-            reviewURL.setText("Review URL: "+ tempMovieReviewsObject.m_strReviewURL);
-
+            TextView reviewURL = (TextView) row.findViewById(R.id.textViewURL);
+            reviewURL.setText("Review URL: " + tempMovieReviewsObject.m_strReviewURL);
             return row;
         }
     }
@@ -523,7 +487,6 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
             m_strReviewContent = reviewContent;
             m_strReviewURL = reviewURL;
         }
-
 
         private MovieReviewsObject(Parcel parcel) {
             m_strReviewAuthor = parcel.readString();
@@ -562,22 +525,19 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         };
     }
 
-    public class FetchMovieTrailersAndReviews extends AsyncTask {
+    private class FetchMovieTrailersAndReviews extends AsyncTask {
 
         @Override
         protected MovieTrailersReviewsObject doInBackground(Object[] params) {
 
             String movieDBJSONString = null;
-            HttpURLConnection urlConnection = null;
+            HttpURLConnection urlConnection;
             BufferedReader reader = null;
             String LOG_TAG = FetchMovieTrailersAndReviews.class.getSimpleName();
 
             String strMovieId = (params[0]).toString();
 
             try {
-
-
-                String themovieDBQuery = null;
                 final String BASE_URL = "http://api.themoviedb.org/3/movie/";
                 final String MOVIE_URL = BASE_URL + strMovieId;
                 String APIKEY_PARAM = "api_key";
@@ -595,7 +555,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                 URL url = new URL(builtURI.toString());
 
                 Log.v(LOG_TAG, "BuildURL:" + url);
-                if(isNetworkAvailable()) {
+                if (isNetworkAvailable()) {
 
                     //Create the request to TheMovieDB and open the connection
                     urlConnection = (HttpURLConnection) url.openConnection();
@@ -620,20 +580,18 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                         Log.v(LOG_TAG, "Line: " + line);
                         buffer.append(line + "\n");
                     }
-
                     if (buffer.length() == 0) {
                         return null;
                     }
                     movieDBJSONString = buffer.toString();
                 }
 
-
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 return null;
             } finally {
                 try {
-                    if(reader != null) {
+                    if (reader != null) {
                         reader.close();
                     }
                 } catch (final IOException e) {
@@ -643,7 +601,6 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
             try {
                 return getMoviesTrailersReviewsfromJSON(movieDBJSONString);
-
 
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
@@ -656,17 +613,17 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         @Override
         protected void onPostExecute(Object result) {
-            if(result!= null) {
-                mMovieTrailersReviewsObject = (MovieTrailersReviewsObject)result;
-                for(int i = 0; i < mMovieTrailersReviewsObject.m_movieTrailerObject.size(); ++i) {
+            if (result != null) {
+                mMovieTrailersReviewsObject = (MovieTrailersReviewsObject) result;
+                for (int i = 0; i < mMovieTrailersReviewsObject.m_movieTrailerObject.size(); ++i) {
                     mMovieTrailerAdapter.add(mMovieTrailerObject.get(i));
                 }
 
-                for(int i = 0; i < mMovieTrailersReviewsObject.m_movieReviewsObjet.size(); ++i) {
+                for (int i = 0; i < mMovieTrailersReviewsObject.m_movieReviewsObjet.size(); ++i) {
                     mMovieReviewAdapter.add(mMovieReviewObject.get(i));
                 }
 
-                if(mShareActionProvider != null) {
+                if (mShareActionProvider != null) {
                     mShareActionProvider.setShareIntent(createShareTrailerIntent());
                 } else {
                     Log.e(LOG_TAG, "Share Action Provider is NULL");
@@ -685,15 +642,12 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     }
 
 
-
     private MovieTrailersReviewsObject getMoviesTrailersReviewsfromJSON(String movieDBJSONString) throws JSONException {
         final String TMDB_TRAILERS = "trailers";
         final String TMDB_YOUTUBE = "youtube";
 
         final String TMDB_REVIEWS = "reviews";
         final String TMDB_RESULTS = "results";
-
-
 
         JSONObject movieDBJSONObject = new JSONObject(movieDBJSONString);
 
@@ -702,42 +656,29 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         int movieYouTubeTrailersArrayLength = movieDBYouTubeTrailersArray.length();
 
-
-        for(int i = 0; i < movieYouTubeTrailersArrayLength; ++i) {
+        for (int i = 0; i < movieYouTubeTrailersArrayLength; ++i) {
             JSONObject movieYouTubeTrailer = movieDBYouTubeTrailersArray.getJSONObject(i);
             m_strTrailerName = movieYouTubeTrailer.getString("name");
             m_strTrailerSource = movieYouTubeTrailer.getString("source");
             m_strTrailerType = movieYouTubeTrailer.getString("type");
-            Log.e("GS_APP", m_strTrailerName);
-            Log.e("GS_APP", m_strTrailerSource);
-            Log.e("GS_APP", m_strTrailerType);
             mMovieTrailerObject.add(new MovieTrailersObject(m_strTrailerName, m_strTrailerSource,
                     m_strTrailerType));
         }
-        Log.e("GS_APP_DETAIL_PREPARE", Integer.toString(mMovieTrailerObject.size()));
+
         JSONObject movieDBReviewssObject = movieDBJSONObject.getJSONObject(TMDB_REVIEWS);
         JSONArray movieDBReviewResultsArray = movieDBReviewssObject.getJSONArray(TMDB_RESULTS);
 
         int movieReviewsArrayLength = movieDBReviewResultsArray.length();
 
-
-        for(int i = 0; i < movieReviewsArrayLength; ++i) {
+        for (int i = 0; i < movieReviewsArrayLength; ++i) {
             JSONObject movieReview = movieDBReviewResultsArray.getJSONObject(i);
             m_strReviewAuthor = movieReview.getString("author");
             m_strReviewContent = movieReview.getString("content");
             m_strReviewURL = movieReview.getString("url");
-            Log.e("GS_APP_2", m_strReviewAuthor);
-            Log.e("GS_APP_2", m_strReviewContent);
-            Log.e("GS_APP_2", m_strReviewURL);
             mMovieReviewObject.add(new MovieReviewsObject(m_strReviewAuthor, m_strReviewContent,
                     m_strReviewURL));
         }
-
         mMovieTrailersReviewsObject = new MovieTrailersReviewsObject(mMovieTrailerObject, mMovieReviewObject);
-
-
-        Log.e("GS_APP_DETAIL_IN", Integer.toString(mMovieTrailerObject.size()));
-        Log.e("GS_APP_DETAIL_IN", Integer.toString(mMovieReviewObject.size()));
 
         return mMovieTrailersReviewsObject;
     }

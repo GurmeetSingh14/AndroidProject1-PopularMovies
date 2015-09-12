@@ -49,26 +49,21 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     private ArrayList<MovieDetailsObject> mMovieDetailsArrayList = null;
     private PopularMovieAdapter mMovieAdapter = null;
-    private GridView moviePostersGrid = null;
     private String mSortQuery = null;
+
     private static final int MENU_SELECTED_POPULARITY = 1;
     private static final int MENU_SELECTED_RATING = 2;
     private static final int MENU_SELECTED_FAVORITE = 3;
     private int mMenuSelection = 0;
 
     private static MovieDbHelper m_FavoriteMovieDbHelper = null;
-//    private ArrayList<MovieTrailersObject> mMovieTrailerObject = null;
-//    private ArrayList<MovieReviewsObject> mMovieReviewObject = null;
-
-    static final String SORT_QUERY = "sort_query";
-    static final String MENU_SELECTION = "menu_selection";
-    static final String MOVIE_DETAILS_LIST = "MovieDetailObjectsArrayList";
-    private static final String MOVIEDETAIL_FRAGMENT_TAG = "DETAILTAG";
     private boolean mTowPaneLayout = false;
 
-    public MainActivityFragment() {
+    private static final String SORT_QUERY = "sort_query";
+    private static final String MENU_SELECTION = "menu_selection";
+    private static final String MOVIE_DETAILS_LIST = "MovieDetailObjectsArrayList";
+    private static final String MOVIEDETAIL_FRAGMENT_TAG = "DETAILTAG";
 
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,7 +71,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         View rootView = inflater.inflate(R.layout.movie_main_fragment, container, false);
 
         //Initialize GridView member variable
-        moviePostersGrid = (GridView) rootView.findViewById(R.id.gridView_home);
+        GridView moviePostersGrid = (GridView) rootView.findViewById(R.id.gridView_home);
 
         //Initialize MovieAdapter and attach it with the GridView
         mMovieAdapter = new PopularMovieAdapter(getActivity(), R.layout.movie_item);
@@ -114,17 +109,18 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             mMovieDetailsArrayList = new ArrayList<MovieDetailsObject>();
             Log.e("GS_APP_DB", "Retrieved Saved Movies 2 :" + mMovieDetailsArrayList.size());
 
-            //Fetch movie details and update the GridView with movie posters
+
             if (mMenuSelection == MENU_SELECTED_FAVORITE) {
+                //Fetch Favorite Movie Details from the Database
                 fetchFavoriteMoviesFromDB();
             } else {
+                //Fetch movie details and update the GridView with movie posters
                 updateMovieGridView();
             }
         }
 
-        MainActivity main_activity = (MainActivity)getActivity();
-
-
+        //Check to see if it is two pane layout
+        MainActivity main_activity = (MainActivity) getActivity();
         if (main_activity.mTwoPaneLayout) {
             mTowPaneLayout = true;
         }
@@ -136,7 +132,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         outState.putString(SORT_QUERY, mSortQuery);
         outState.putString(MENU_SELECTION, Integer.toString(mMenuSelection));
         outState.putParcelableArrayList(MOVIE_DETAILS_LIST, mMovieDetailsArrayList);
-        Log.e("GS_APP_DB", "Saving Movies :" + mMovieDetailsArrayList.size());
         super.onSaveInstanceState(outState);
     }
 
@@ -144,12 +139,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
-    public void updateMovieGridView() {
+    private void updateMovieGridView() {
         //Check if network is available and fetch the movie details from TMDB
         if (isNetworkAvailable()) {
             FetchMovieDetails movieDetails = new FetchMovieDetails();
@@ -161,9 +151,8 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             toastNoConnection.show();
         }
     }
-
+    //For favorite movies, fetch the details from database
     private void fetchFavoriteMoviesFromDB() {
-
         FetchFavoriteMovieDetailsFromDB movieDetailsFromDB = new FetchFavoriteMovieDetailsFromDB();
         movieDetailsFromDB.execute();
     }
@@ -199,30 +188,26 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             fetchFavoriteMoviesFromDB();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Log.e("GS_APP_1", Integer.toString(mMovieDetailsArrayList.get(position).m_nMovieId));
+        displayMovieDetailsUI(position);
+    }
 
+    private void displayMovieDetailsUI(int position) {
         Intent movieIntent = new Intent(getActivity(), MovieDetailActivity.class);
-
-        MovieDetailsObject movieDetails = (MovieDetailsObject)mMovieDetailsArrayList.get(position);
-        movieIntent.putExtra("movieTitle", movieDetails.m_strMovieTitle);
-        movieIntent.putExtra("moviePosterFullPath", movieDetails.m_strMoviePosterFullPath);
-        movieIntent.putExtra("movieUserRating", movieDetails.m_strMovieUserRating);
-        movieIntent.putExtra("movieReleaseDate", movieDetails.m_strMovieReleaseDate);
-        movieIntent.putExtra("moviePlot", movieDetails.m_strMoviePlot);
-        movieIntent.putExtra("movieId", movieDetails.m_nMovieId);
-        Log.e("GS_DETAIL_IN", Integer.toString(movieDetails.m_nMovieId));
-
-
+        if(mMovieDetailsArrayList.size() >= position+1) {
+            MovieDetailsObject movieDetails = mMovieDetailsArrayList.get(position);
+            movieIntent.putExtra("movieTitle", movieDetails.m_strMovieTitle);
+            movieIntent.putExtra("moviePosterFullPath", movieDetails.m_strMoviePosterFullPath);
+            movieIntent.putExtra("movieUserRating", movieDetails.m_strMovieUserRating);
+            movieIntent.putExtra("movieReleaseDate", movieDetails.m_strMovieReleaseDate);
+            movieIntent.putExtra("moviePlot", movieDetails.m_strMoviePlot);
+            movieIntent.putExtra("movieId", movieDetails.m_nMovieId);
+        }
         if (mTowPaneLayout) {
-            // In two-pane mode, show the detail view in this activity by
-            // adding or replacing the detail fragment using a
-            // fragment transaction.
             Bundle args = new Bundle();
             args.putParcelable(MovieDetailActivityFragment.DETAIL_URI, movieIntent);
 
@@ -237,14 +222,17 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         }
     }
 
-
     //MovieDetailsObject holds the movie details like MoviePosterFullPath,
     //MovieTitle, MoviePlot, UserRating, ReleaseData etc.
+    @SuppressWarnings("CanBeFinal")
     public class MovieDetailsObject implements Parcelable {
 
-        String m_strMoviePosterFullPath, m_strMovieTitle, m_strMoviePlot = null;
-        String m_strMovieUserRating, m_strMovieReleaseDate = null;
-        int m_nMovieId;
+        final String m_strMoviePosterFullPath;
+        final String m_strMovieTitle;
+        final String m_strMoviePlot;
+        final String m_strMovieUserRating;
+        String m_strMovieReleaseDate = null;
+        final int m_nMovieId;
 
 
         MovieDetailsObject(String moviePosterFullPath, String movieTitle, String moviePlot,
@@ -258,7 +246,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         }
 
         private MovieDetailsObject(Parcel parcel) {
-            Log.v("GS_TAG", "In Parcabel function");
             m_strMoviePosterFullPath = parcel.readString();
             m_strMovieTitle = parcel.readString();
             m_strMoviePlot = parcel.readString();
@@ -299,23 +286,17 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 return null;
             }
         };
-
     }
-
-
-
 
     //Movie Adapter class for GridView
     public class PopularMovieAdapter extends ArrayAdapter<MovieDetailsObject> {
-        private Context mContext;
+        private final Context mContext;
         private int mImageCount;
 
         public PopularMovieAdapter(Context context, int resource) {
             super(context, resource);
             mContext = context;
         }
-
-
         @Override
         public int getCount() {
             int count = 0;
@@ -325,17 +306,13 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             return count;
         }
 
-
         @Override
         public long getItemId(int position) {
             return position;
         }
 
-
         class ViewHolder {
-
-            ImageView movieImageView;
-
+            final ImageView movieImageView;
             ViewHolder(View v) {
                 movieImageView = (ImageView) v.findViewById(R.id.imageView_item);
             }
@@ -344,7 +321,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             View row = convertView;
-            ViewHolder holder = null;
+            ViewHolder holder;
             if (row == null) {
                 LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 row = inflater.inflate(R.layout.movie_item, parent, false);
@@ -355,19 +332,22 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             }
             MovieDetailsObject tempMovieObject = mMovieDetailsArrayList.get(position);
             holder.movieImageView.setTag(tempMovieObject);
+            int errorResId;
+            if(mTowPaneLayout){
+                errorResId = R.drawable.placeholder_poster_small;
+            } else {
+                errorResId = R.drawable.placeholder_poster_large;
+            }
             Picasso.with(getActivity()).load(tempMovieObject.m_strMoviePosterFullPath)
-                    .error(R.drawable.placeholder_poster)
+                    .error(errorResId)
                     .into(holder.movieImageView);
 
             return row;
         }
     }
 
-
-
-
     //FetchMovieDetails class to fetch the movie details using TMDB APIs
-    public class FetchMovieDetails extends AsyncTask {
+    private class FetchMovieDetails extends AsyncTask {
 
         @Override
         protected ArrayList<MovieDetailsObject> doInBackground(Object[] params) {
@@ -379,7 +359,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             try {
 
                 //Create Query for themoviedb.org
-                String themovieDBQuery = null;
                 final String BASE_URL = "https://api.themoviedb.org/3/discover/movie?";
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
@@ -410,10 +389,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                         return null;
                     }
 
-                    Log.v(LOG_TAG, "The Movie DB did not returned NULL");
-
                     reader = new BufferedReader(new InputStreamReader(movieInputStream));
-
                     String line;
 
                     while ((line = reader.readLine()) != null) {
@@ -426,8 +402,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                     }
                     movieDBJSONString = buffer.toString();
                 }
-
-
             } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
                 return null;
@@ -443,16 +417,12 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
             try {
                 return getMoviesDetailsfromJSON(movieDBJSONString);
-
-
             } catch (JSONException e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
                 e.printStackTrace();
             } catch (Exception e) {
                 Log.e(LOG_TAG, e.getMessage(), e);
             }
-
-
             return null;
         }
 
@@ -462,6 +432,9 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             if (result != null) {
                 for (int i = 0; i < mMovieDetailsArrayList.size(); ++i) {
                     mMovieAdapter.add(mMovieDetailsArrayList.get(i));
+                }
+                if (mMovieDetailsArrayList.size() > 0 && mTowPaneLayout) {
+                    displayMovieDetailsUI(0);
                 }
             }
 
@@ -482,23 +455,19 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
         String posterBasePath;
 
-        if(mTowPaneLayout){
+        if (mTowPaneLayout) {
             posterBasePath = "http://image.tmdb.org/t/p/w185/";
         } else {
             posterBasePath = "http://image.tmdb.org/t/p/w500/";
         }
 
+        String movie_title, movie_poster_path, movie_plot;
+        String movie_user_rating, movie_release_date;
+        int movie_id;
 
-        String movie_title, movie_poster_path, movie_plot = null;
-        String movie_user_rating, movie_release_date = null;
-        int movie_id = 0;
-
-        ImageView posterImageView = null;
         int length = movieDBArray.length();
         mMovieDetailsArrayList.clear();
 
-
-        String moviePath;
         for (int i = 0; i < length; ++i) {
             JSONObject movieInfo = movieDBArray.getJSONObject(i);
 
@@ -509,21 +478,15 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             movie_release_date = movieInfo.getString(TMDB_RELEASE_DATE);
             movie_id = movieInfo.getInt(TMDB_MOVIE_ID);
 
-            Log.e("GS_APP", "Movie ID: " + Integer.toString(movie_id));
-
             MovieDetailsObject movie = new MovieDetailsObject(movie_poster_path, movie_title,
                     movie_plot, movie_user_rating, movie_release_date, movie_id);
             mMovieDetailsArrayList.add(movie);
         }
-
         return mMovieDetailsArrayList;
     }
 
 
-
-
-
-    public class FetchFavoriteMovieDetailsFromDB extends AsyncTask {
+    private class FetchFavoriteMovieDetailsFromDB extends AsyncTask {
 
         @Override
         protected ArrayList<MovieDetailsObject> doInBackground(Object[] params) {
@@ -543,7 +506,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                     null);
 
             cursor.moveToFirst();
-            Log.e("GS_APP_DB", "Main Activity::Favorite Movies Count " + Integer.toString(cursor.getCount()));
 
             mMovieDetailsArrayList.clear();
             do {
@@ -554,7 +516,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                         cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_USER_RATING)),
                         cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE)),
                         Integer.parseInt(cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID))));
-
 
                 mMovieDetailsArrayList.add(movie);
             } while (cursor.moveToNext());
@@ -568,7 +529,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         @Override
         protected void onPostExecute(Object result) {
             if (result != null) {
-                Log.e("GS_APP_DB", "MoveDetailsArrayList Size is: " + Integer.toString(mMovieDetailsArrayList.size()));
                 for (int i = 0; i < mMovieDetailsArrayList.size(); ++i) {
                     mMovieAdapter.add(mMovieDetailsArrayList.get(i));
                 }

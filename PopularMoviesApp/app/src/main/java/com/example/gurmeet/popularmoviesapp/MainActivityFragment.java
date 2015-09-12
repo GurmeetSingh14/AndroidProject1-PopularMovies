@@ -363,7 +363,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
 
-                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
+                String api_Key = "API_KEY_GOES_HERE";
 
 
                 Uri builtURI = Uri.parse(BASE_URL).buildUpon()

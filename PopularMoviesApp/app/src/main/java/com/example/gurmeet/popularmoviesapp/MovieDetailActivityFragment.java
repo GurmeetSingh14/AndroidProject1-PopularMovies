@@ -213,35 +213,19 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         ContentValues favorite_movie_review_values = getFavoriteMovieReviewsValues();
 
         //Insert Favorite Movie details, trailers and review information to database
-        if (favorite_movie_values != null) {
-            Uri insertedMovieDetailsUri = getActivity().getContentResolver().insert(
+            getActivity().getContentResolver().insert(
                     MovieAppContract.MovieDetailsEntry.CONTENT_URI,
                     favorite_movie_values);
-            Log.e("GS_APP_PROVIDER", "New Row insertedMovieDetailsUri Inserted " + insertedMovieDetailsUri);
-        }
 
-        if (favorite_movie_trailer_values != null) {
-
-            Uri insertedMovieTrailerUri = getActivity().getContentResolver().insert(
+            getActivity().getContentResolver().insert(
                     MovieAppContract.MovieTrailerEntry.CONTENT_URI,
                     favorite_movie_trailer_values
             );
-            Log.e("GS_APP_PROVIDER", "New Row insertedMovieTrailerUri Inserted " + insertedMovieTrailerUri);
-        }
 
-        if (favorite_movie_review_values != null) {
-           /* Uri insertedMovieReviewUri = getActivity().getContentResolver().insert(
+            getActivity().getContentResolver().insert(
                     MovieAppContract.MovieReviewsEntry.CONTENT_URI,
                     favorite_movie_review_values
-            );*/
-            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("trailer_source"));
-            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("trailer_name"));
-            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("trailer_type"));
-            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("movie_id"));
-            //Log.e("GS_APP_PROVIDER", "New Row insertedMovieReviewUri Inserted: " + insertedMovieReviewUri);
-        }
-
-
+            );
     }
 
 
@@ -250,18 +234,14 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         int detailRowCount = getActivity().getContentResolver().delete(MovieAppContract.MovieDetailsEntry.CONTENT_URI,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[]{Integer.toString(m_nMovieId)});
-        Log.e("GS_APP_PROVIDER", "Movie Detail Row Deletion Count: " + Integer.toString(detailRowCount));
+
         int trailerRowCount = getActivity().getContentResolver().delete(MovieAppContract.MovieTrailerEntry.CONTENT_URI,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[]{Integer.toString(m_nMovieId)});
-        Log.e("GS_APP_PROVIDER", "Movie Trailers Row Deletion Count: " + Integer.toString(trailerRowCount));
 
         int reviewRowCount = getActivity().getContentResolver().delete(MovieAppContract.MovieReviewsEntry.CONTENT_URI,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[]{Integer.toString(m_nMovieId)});
-        Log.e("GS_APP_PROVIDER", "Movie Review Row Deletion Count: " + Integer.toString(reviewRowCount));
-
-
     }
 
 
@@ -277,7 +257,6 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
 
         if (cursor.getCount() > 0) {
             bFavoriteMovie = true;
-            Log.e("GS_APP_DB", "This movie is my favorite !!");
         }
 
         cursor.close();
@@ -593,7 +572,6 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                         return null;
                     }
 
-                    Log.v(LOG_TAG, "The Movie DB did not returned NULL");
 
                     reader = new BufferedReader(new InputStreamReader(movieInputStream));
 

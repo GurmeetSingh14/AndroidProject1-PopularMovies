@@ -117,15 +117,12 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 updateMovieGridView();
             }
         }
-
         //Check to see if it is two pane layout
         MainActivity main_activity = (MainActivity) getActivity();
         if (main_activity.mTwoPaneLayout) {
             mTowPaneLayout = true;
         }
-
     }
-
 
     @Override
     public void onStart() {
@@ -520,7 +517,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             mMovieDetailsArrayList.clear();
             try {
                 if (cursor.moveToFirst()) {
-                    Log.e("GS_APP_PROVIDER", "Size of the cursor is: " + Integer.toString(cursor.getCount()));
                     do {
                         MovieDetailsObject movie = new MovieDetailsObject(
                                 cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH)),
@@ -535,40 +531,6 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             } finally {
                     cursor.close();
             }
-
-
-            /*SQLiteDatabase db = m_FavoriteMovieDbHelper.getReadableDatabase();
-            Cursor cursor = db.query(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
-                    new String[]{MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID,
-                            MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH,
-                            MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_TITLE,
-                            MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_PLOT,
-                            MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_USER_RATING,
-                            MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE},
-                    null,
-                    null,
-                    null,
-                    null,
-                    null);
-
-            cursor.moveToFirst();
-
-            mMovieDetailsArrayList.clear();
-            do {
-                MovieDetailsObject movie = new MovieDetailsObject(
-                        cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH)),
-                        cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_TITLE)),
-                        cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_PLOT)),
-                        cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_USER_RATING)),
-                        cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE)),
-                        Integer.parseInt(cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID))));
-
-                mMovieDetailsArrayList.add(movie);
-            } while (cursor.moveToNext());
-
-            cursor.close();
-            db.close();*/
-
             return mMovieDetailsArrayList;
         }
 

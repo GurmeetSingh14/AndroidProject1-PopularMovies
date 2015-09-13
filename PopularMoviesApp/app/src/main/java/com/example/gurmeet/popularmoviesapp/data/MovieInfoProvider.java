@@ -30,8 +30,6 @@ public class MovieInfoProvider extends ContentProvider {
     static{
         sMovieDetailsByTrailersAndReviewsQueryBuilder = new SQLiteQueryBuilder();
 
-        //This is an inner join which looks like
-        //weather INNER JOIN location ON weather.location_id = location._id
         sMovieDetailsByTrailersAndReviewsQueryBuilder.setTables(
                 MovieAppContract.MovieDetailsEntry.TABLE_NAME + " INNER JOIN " +
                         MovieAppContract.MovieTrailerEntry.TABLE_NAME +
@@ -48,13 +46,9 @@ public class MovieInfoProvider extends ContentProvider {
         );
     }
 
-
-    //location.location_setting = ?
     private static final String sMovieByIdSelection =
             MovieAppContract.MovieDetailsEntry.TABLE_NAME+
                     "." + MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + " = ? ";
-
-
 
     private Cursor getMovieDetails(
             Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -71,7 +65,6 @@ public class MovieInfoProvider extends ContentProvider {
                 null
         );
     }
-
 
     private Cursor getMovieDetailsForMovieId(
             Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
@@ -159,45 +152,32 @@ public class MovieInfoProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
                         String sortOrder) {
-        // Here's the switch statement that, given a URI, will determine what kind of request it is,
-        // and query the database accordingly.
-        Log.e("GS_APP_PROVIDER", "In Query Method of ContentProvider");
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            // "weather/*/*"
             case MOVIE_DETAILS:
             {
-                Log.e("GS_APP_PROVIDER", "In MOVIE_DETAILS Method of ContentProvider");
                 retCursor = getMovieDetails(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
-            // "weather/*"
             case MOVIE_DETAILS_FOR_MOVIE_ID: {
-                Log.e("GS_APP_PROVIDER", "In MOVIE_DETAILS_FOR_MOVIE_ID Method of ContentProvider");
                 retCursor = getMovieDetailsForMovieId(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
-            // "weather"
             case MOVIE_TRAILERS: {
-                Log.e("GS_APP_PROVIDER", "In MOVIE_TRAILERS Method of ContentProvider");
                 retCursor = getMovieTrailers(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
-            // "location"
             case MOVIE_TRAILERS_FOR_MOVIE_ID: {
-                Log.e("GS_APP_PROVIDER", "In MOVIE_TRAILERS_FOR_MOVIE_ID Method of ContentProvider");
                 retCursor = getMovieTrailersForMovieId(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
 
             case MOVIE_REVIEWS: {
-                Log.e("GS_APP_PROVIDER", "In MOVIE_REVIEWS Method of ContentProvider");
                 retCursor = getMovieReviews(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
 
             case MOVIE_REVIEWS_FOR_MOVIE_ID: {
-                Log.e("GS_APP_PROVIDER", "In MOVIE_REVIEWS_FOR_MOVIE_ID Method of ContentProvider");
                 retCursor = getMovieReviewsForMovieId(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }

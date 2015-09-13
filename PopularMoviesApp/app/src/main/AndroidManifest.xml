@@ -23,6 +23,11 @@
             android:name=".MovieDetailActivity"
             android:label="@string/title_activity_movie_detail" >
         </activity>
+
+        <provider
+            android:authorities="com.example.gurmeet.popularmoviesapp"
+            android:name=".data.MovieInfoProvider"></provider>
+
     </application>
 
 </manifest>

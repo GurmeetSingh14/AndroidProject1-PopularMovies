@@ -127,6 +127,19 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     }
 
+
+    @Override
+    public void onStart() {
+        if (mMenuSelection == MENU_SELECTED_FAVORITE) {
+            //Fetch Favorite Movie Details from the Database
+            fetchFavoriteMoviesFromDB();
+        } else {
+            //Fetch movie details and update the GridView with movie posters
+            updateMovieGridView();
+        }
+        super.onStart();
+    }
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putString(SORT_QUERY, mSortQuery);
@@ -330,18 +343,19 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             } else {
                 holder = (ViewHolder) row.getTag();
             }
-            MovieDetailsObject tempMovieObject = mMovieDetailsArrayList.get(position);
-            holder.movieImageView.setTag(tempMovieObject);
-            int errorResId;
-            if(mTowPaneLayout){
-                errorResId = R.drawable.placeholder_poster_small;
-            } else {
-                errorResId = R.drawable.placeholder_poster_large;
+            if(mMovieDetailsArrayList.size() >= position) {
+                MovieDetailsObject tempMovieObject = mMovieDetailsArrayList.get(position);
+                holder.movieImageView.setTag(tempMovieObject);
+                int errorResId;
+                if (mTowPaneLayout) {
+                    errorResId = R.drawable.placeholder_poster_small;
+                } else {
+                    errorResId = R.drawable.placeholder_poster_large;
+                }
+                Picasso.with(getActivity()).load(tempMovieObject.m_strMoviePosterFullPath)
+                        .error(errorResId)
+                        .into(holder.movieImageView);
             }
-            Picasso.with(getActivity()).load(tempMovieObject.m_strMoviePosterFullPath)
-                    .error(errorResId)
-                    .into(holder.movieImageView);
-
             return row;
         }
     }
@@ -363,7 +377,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
 
-                String api_Key = "API_KEY_GOES_HERE";
+                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
 
 
                 Uri builtURI = Uri.parse(BASE_URL).buildUpon()
@@ -491,7 +505,35 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         @Override
         protected ArrayList<MovieDetailsObject> doInBackground(Object[] params) {
 
-            SQLiteDatabase db = m_FavoriteMovieDbHelper.getReadableDatabase();
+            Cursor cursor = getActivity().getContentResolver().query(
+                MovieAppContract.MovieDetailsEntry.CONTENT_URI,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+
+            mMovieDetailsArrayList.clear();
+            try {
+                if (cursor.moveToFirst()) {
+                    Log.e("GS_APP_PROVIDER", "Size of the cursor is: " + Integer.toString(cursor.getCount()));
+                    do {
+                        MovieDetailsObject movie = new MovieDetailsObject(
+                                cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH)),
+                                cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_TITLE)),
+                                cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_PLOT)),
+                                cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_USER_RATING)),
+                                cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE)),
+                                Integer.parseInt(cursor.getString(cursor.getColumnIndex(MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID))));
+                        mMovieDetailsArrayList.add(movie);
+                    } while (cursor.moveToNext());
+                }
+            } finally {
+                    cursor.close();
+            }
+
+
+            /*SQLiteDatabase db = m_FavoriteMovieDbHelper.getReadableDatabase();
             Cursor cursor = db.query(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
                     new String[]{MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID,
                             MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH,
@@ -521,7 +563,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             } while (cursor.moveToNext());
 
             cursor.close();
-            db.close();
+            db.close();*/
 
             return mMovieDetailsArrayList;
         }

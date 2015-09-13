@@ -208,37 +208,61 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
     }
 
     private void insertFavoriteMovieDetailsToDB() {
-        SQLiteDatabase db = m_FavoriteMovieDbHelper.getWritableDatabase();
 
         ContentValues favorite_movie_values = getFavoriteMovieValues();
         ContentValues favorite_movie_trailer_values = getFavoriteMovieTrailerValues();
         ContentValues favorite_movie_review_values = getFavoriteMovieReviewsValues();
-        //Insert Favorite Movie details, trailers and review information to database
-        db.insert(MovieAppContract.MovieDetailsEntry.TABLE_NAME, null, favorite_movie_values);
-        db.insert(MovieAppContract.MovieTrailerEntry.TABLE_NAME, null, favorite_movie_trailer_values);
-        db.insert(MovieAppContract.MovieReviewsEntry.TABLE_NAME, null, favorite_movie_review_values);
 
-        db.close();
+        //Insert Favorite Movie details, trailers and review information to database
+        if (favorite_movie_values != null) {
+            Uri insertedMovieDetailsUri = getActivity().getContentResolver().insert(
+                    MovieAppContract.MovieDetailsEntry.CONTENT_URI,
+                    favorite_movie_values);
+            Log.e("GS_APP_PROVIDER", "New Row insertedMovieDetailsUri Inserted " + insertedMovieDetailsUri);
+        }
+
+        if (favorite_movie_trailer_values != null) {
+
+            Uri insertedMovieTrailerUri = getActivity().getContentResolver().insert(
+                    MovieAppContract.MovieTrailerEntry.CONTENT_URI,
+                    favorite_movie_trailer_values
+            );
+            Log.e("GS_APP_PROVIDER", "New Row insertedMovieTrailerUri Inserted " + insertedMovieTrailerUri);
+        }
+
+        if (favorite_movie_review_values != null) {
+           /* Uri insertedMovieReviewUri = getActivity().getContentResolver().insert(
+                    MovieAppContract.MovieReviewsEntry.CONTENT_URI,
+                    favorite_movie_review_values
+            );*/
+            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("trailer_source"));
+            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("trailer_name"));
+            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("trailer_type"));
+            Log.e("GS_APP_REVIEW","Review :" + favorite_movie_review_values.getAsString("movie_id"));
+            //Log.e("GS_APP_PROVIDER", "New Row insertedMovieReviewUri Inserted: " + insertedMovieReviewUri);
+        }
+
+
     }
 
 
     private void deleteFavoriteMovieDetailsFromDB() {
 
-        SQLiteDatabase db = m_FavoriteMovieDbHelper.getWritableDatabase();
-
-        db.delete(MovieAppContract.MovieDetailsEntry.TABLE_NAME,
+        int detailRowCount = getActivity().getContentResolver().delete(MovieAppContract.MovieDetailsEntry.CONTENT_URI,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[]{Integer.toString(m_nMovieId)});
-
-        db.delete(MovieAppContract.MovieTrailerEntry.TABLE_NAME,
+        Log.e("GS_APP_PROVIDER", "Movie Detail Row Deletion Count: " + Integer.toString(detailRowCount));
+        int trailerRowCount = getActivity().getContentResolver().delete(MovieAppContract.MovieTrailerEntry.CONTENT_URI,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[]{Integer.toString(m_nMovieId)});
+        Log.e("GS_APP_PROVIDER", "Movie Trailers Row Deletion Count: " + Integer.toString(trailerRowCount));
 
-        db.delete(MovieAppContract.MovieReviewsEntry.TABLE_NAME,
+        int reviewRowCount = getActivity().getContentResolver().delete(MovieAppContract.MovieReviewsEntry.CONTENT_URI,
                 MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + "= ?",
                 new String[]{Integer.toString(m_nMovieId)});
+        Log.e("GS_APP_PROVIDER", "Movie Review Row Deletion Count: " + Integer.toString(reviewRowCount));
 
-        db.close();
+
     }
 
 
@@ -543,7 +567,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                 String APIKEY_PARAM = "api_key";
                 String APPEND_PARAM = "append_to_response";
 
-                String api_Key = "API_KEY_GOES_HERE";
+                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
                 String appendTrailersReviews = "trailers,reviews";
 
 

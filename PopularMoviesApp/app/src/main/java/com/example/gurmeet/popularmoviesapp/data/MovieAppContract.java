@@ -50,6 +50,10 @@ public class MovieAppContract {
         public static Uri buildMovieDetailsForMovieIdUri(String strMovieId) {
             return CONTENT_URI.buildUpon().appendPath(strMovieId).build();
         }
+
+        public static String getMovieIdFromUri(Uri uri){
+            return uri.getPathSegments().get(1);
+        }
     }
 
     public static final class MovieTrailerEntry implements BaseColumns {
@@ -77,7 +81,9 @@ public class MovieAppContract {
         public static Uri buildMovieTrailersForMovieIdUri(String strMovieId) {
             return CONTENT_URI.buildUpon().appendPath(strMovieId).build();
         }
-
+        public static String getMovieIdFromUri(Uri uri){
+            return uri.getPathSegments().get(1);
+        }
     }
 
     public static final class MovieReviewsEntry implements BaseColumns {
@@ -104,6 +110,10 @@ public class MovieAppContract {
 
         public static Uri buildMovieReviewsForMovieIdUri(String strMovieId) {
             return CONTENT_URI.buildUpon().appendPath(strMovieId).build();
+        }
+
+        public static String getMovieIdFromUri(Uri uri){
+            return uri.getPathSegments().get(1);
         }
     }
 }

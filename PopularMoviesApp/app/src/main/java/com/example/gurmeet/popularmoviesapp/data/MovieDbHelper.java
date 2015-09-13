@@ -13,7 +13,7 @@ import com.example.gurmeet.popularmoviesapp.data.MovieAppContract.MovieTrailerEn
  */
 public class MovieDbHelper extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "popular_movie_app.db";
 
     public MovieDbHelper(Context context) {
@@ -26,20 +26,20 @@ public class MovieDbHelper extends SQLiteOpenHelper {
         final String SQL_CREATE_MOVIE_DETAILS_TABLE = "CREATE TABLE " + MovieDetailsEntry.TABLE_NAME + " ("
                 + MovieDetailsEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + MovieDetailsEntry.COLUMN_MOVIE_ID + " INTEGER NOT NULL,"
-                + MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH + " TEXT NOT NULL,"
-                + MovieDetailsEntry.COLUMN_MOVIE_USER_RATING + " TEXT NOT NULL,"
-                + MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE + " TEXT NOT NULL,"
-                + MovieDetailsEntry.COLUMN_MOVIE_TITLE + " TEXT NOT NULL,"
-                + MovieDetailsEntry.COLUMN_MOVIE_PLOT + " TEXT NOT NULL);";
+                + MovieDetailsEntry.COLUMN_MOVIE_POSTER_PATH + " TEXT,"
+                + MovieDetailsEntry.COLUMN_MOVIE_USER_RATING + " TEXT,"
+                + MovieDetailsEntry.COLUMN_MOVIE_RELEASE_DATE + " TEXT,"
+                + MovieDetailsEntry.COLUMN_MOVIE_TITLE + " TEXT,"
+                + MovieDetailsEntry.COLUMN_MOVIE_PLOT + " TEXT);";
 
         db.execSQL(SQL_CREATE_MOVIE_DETAILS_TABLE);
 
 
         final String SQL_CREATE_MOVIE_TRAILER_TABLE = "CREATE TABLE " + MovieTrailerEntry.TABLE_NAME + " ("
                 + MovieTrailerEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + MovieTrailerEntry.COLUMN_TRAILER_NAME + " TEXT NOT NULL,"
-                + MovieTrailerEntry.COLUMN_TRAILER_TYPE + " TEXT NOT NULL,"
-                + MovieTrailerEntry.COLUMN_TRAILER_SOURCE + " TEXT NOT NULL,"
+                + MovieTrailerEntry.COLUMN_TRAILER_NAME + " TEXT,"
+                + MovieTrailerEntry.COLUMN_TRAILER_TYPE + " TEXT,"
+                + MovieTrailerEntry.COLUMN_TRAILER_SOURCE + " TEXT,"
                 + MovieTrailerEntry.COLUMN_MOVIE_KEY + " INTEGER NOT NULL,"
 
                 // Set up the location column as a foreign key to location table.
@@ -53,9 +53,9 @@ public class MovieDbHelper extends SQLiteOpenHelper {
 
         final String SQL_CREATE_MOVIE_REVIEW_TABLE = "CREATE TABLE " + MovieReviewsEntry.TABLE_NAME + " ("
                 + MovieReviewsEntry._ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + MovieReviewsEntry.COLUMN_REVIEW_AUTHOR + " TEXT NOT NULL,"
-                + MovieReviewsEntry.COLUMN_REVIEW_CONTENT + " TEXT NOT NULL,"
-                + MovieReviewsEntry.COLUMN_REVIEW_URL + " TEXT NOT NULL,"
+                + MovieReviewsEntry.COLUMN_REVIEW_AUTHOR + " TEXT,"
+                + MovieReviewsEntry.COLUMN_REVIEW_CONTENT + " TEXT,"
+                + MovieReviewsEntry.COLUMN_REVIEW_URL + " TEXT,"
                 + MovieReviewsEntry.COLUMN_MOVIE_KEY + " INTEGER NOT NULL,"
 
         // Set up the location column as a foreign key to location table.

@@ -55,8 +55,8 @@ public class MovieDbHelper extends SQLiteOpenHelper {
                 + MovieReviewsEntry.COLUMN_REVIEW_URL + " TEXT,"
                 + MovieReviewsEntry.COLUMN_MOVIE_KEY + " INTEGER NOT NULL,"
 
-        // Set up the location column as a foreign key to location table.
-        + " FOREIGN KEY (" + MovieReviewsEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +
+                // Set up the location column as a foreign key to location table.
+                + " FOREIGN KEY (" + MovieReviewsEntry.COLUMN_MOVIE_KEY + ") REFERENCES " +
                 MovieDetailsEntry.TABLE_NAME + " (" + MovieDetailsEntry.COLUMN_MOVIE_ID + "));";
 
         db.execSQL(SQL_CREATE_MOVIE_REVIEW_TABLE);

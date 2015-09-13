@@ -213,19 +213,19 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
         ContentValues favorite_movie_review_values = getFavoriteMovieReviewsValues();
 
         //Insert Favorite Movie details, trailers and review information to database
-            getActivity().getContentResolver().insert(
-                    MovieAppContract.MovieDetailsEntry.CONTENT_URI,
-                    favorite_movie_values);
+        getActivity().getContentResolver().insert(
+                MovieAppContract.MovieDetailsEntry.CONTENT_URI,
+                favorite_movie_values);
 
-            getActivity().getContentResolver().insert(
-                    MovieAppContract.MovieTrailerEntry.CONTENT_URI,
-                    favorite_movie_trailer_values
-            );
+        getActivity().getContentResolver().insert(
+                MovieAppContract.MovieTrailerEntry.CONTENT_URI,
+                favorite_movie_trailer_values
+        );
 
-            getActivity().getContentResolver().insert(
-                    MovieAppContract.MovieReviewsEntry.CONTENT_URI,
-                    favorite_movie_review_values
-            );
+        getActivity().getContentResolver().insert(
+                MovieAppContract.MovieReviewsEntry.CONTENT_URI,
+                favorite_movie_review_values
+        );
     }
 
 

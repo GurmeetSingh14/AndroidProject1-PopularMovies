@@ -27,7 +27,7 @@ public class MovieInfoProvider extends ContentProvider {
 
     private static final SQLiteQueryBuilder sMovieDetailsByTrailersAndReviewsQueryBuilder;
 
-    static{
+    static {
         sMovieDetailsByTrailersAndReviewsQueryBuilder = new SQLiteQueryBuilder();
 
         sMovieDetailsByTrailersAndReviewsQueryBuilder.setTables(
@@ -47,7 +47,7 @@ public class MovieInfoProvider extends ContentProvider {
     }
 
     private static final String sMovieByIdSelection =
-            MovieAppContract.MovieDetailsEntry.TABLE_NAME+
+            MovieAppContract.MovieDetailsEntry.TABLE_NAME +
                     "." + MovieAppContract.MovieDetailsEntry.COLUMN_MOVIE_ID + " = ? ";
 
     private Cursor getMovieDetails(
@@ -154,8 +154,7 @@ public class MovieInfoProvider extends ContentProvider {
                         String sortOrder) {
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
-            case MOVIE_DETAILS:
-            {
+            case MOVIE_DETAILS: {
                 retCursor = getMovieDetails(uri, projection, selection, selectionArgs, sortOrder);
                 break;
             }
@@ -218,10 +217,10 @@ public class MovieInfoProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         Uri resultUri;
 
-        switch(match) {
+        switch (match) {
             case MOVIE_DETAILS:
                 long rowId = db.insert(MovieAppContract.MovieDetailsEntry.TABLE_NAME, null, values);
-                if(rowId > 0){
+                if (rowId > 0) {
                     resultUri = MovieAppContract.MovieDetailsEntry.buildMovieDetailsUri(rowId);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -230,7 +229,7 @@ public class MovieInfoProvider extends ContentProvider {
 
             case MOVIE_TRAILERS:
                 long rowTrailerId = db.insert(MovieAppContract.MovieTrailerEntry.TABLE_NAME, null, values);
-                if(rowTrailerId > 0){
+                if (rowTrailerId > 0) {
                     resultUri = MovieAppContract.MovieDetailsEntry.buildMovieDetailsUri(rowTrailerId);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -239,7 +238,7 @@ public class MovieInfoProvider extends ContentProvider {
 
             case MOVIE_REVIEWS:
                 long rowReviewId = db.insert(MovieAppContract.MovieReviewsEntry.TABLE_NAME, null, values);
-                if(rowReviewId > 0){
+                if (rowReviewId > 0) {
                     resultUri = MovieAppContract.MovieDetailsEntry.buildMovieDetailsUri(rowReviewId);
                 } else {
                     throw new android.database.SQLException("Failed to insert row into " + uri);
@@ -262,7 +261,7 @@ public class MovieInfoProvider extends ContentProvider {
         final int match = sUriMatcher.match(uri);
         int rowsDeleted;
 
-        if ( null == selection ) selection = "1";
+        if (null == selection) selection = "1";
         switch (match) {
             case MOVIE_DETAILS:
                 rowsDeleted = db.delete(
@@ -314,7 +313,6 @@ public class MovieInfoProvider extends ContentProvider {
         }
         return rowsUpdated;
     }
-
 
 
     private static UriMatcher buildUriMatcher() {

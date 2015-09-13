@@ -51,7 +51,7 @@ public class MovieAppContract {
             return CONTENT_URI.buildUpon().appendPath(strMovieId).build();
         }
 
-        public static String getMovieIdFromUri(Uri uri){
+        public static String getMovieIdFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
     }
@@ -78,10 +78,12 @@ public class MovieAppContract {
         public static Uri buildMovieTrailersUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
         public static Uri buildMovieTrailersForMovieIdUri(String strMovieId) {
             return CONTENT_URI.buildUpon().appendPath(strMovieId).build();
         }
-        public static String getMovieIdFromUri(Uri uri){
+
+        public static String getMovieIdFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
     }
@@ -112,7 +114,7 @@ public class MovieAppContract {
             return CONTENT_URI.buildUpon().appendPath(strMovieId).build();
         }
 
-        public static String getMovieIdFromUri(Uri uri){
+        public static String getMovieIdFromUri(Uri uri) {
             return uri.getPathSegments().get(1);
         }
     }

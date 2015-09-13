@@ -160,6 +160,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             toastNoConnection.show();
         }
     }
+
     //For favorite movies, fetch the details from database
     private void fetchFavoriteMoviesFromDB() {
         FetchFavoriteMovieDetailsFromDB movieDetailsFromDB = new FetchFavoriteMovieDetailsFromDB();
@@ -180,10 +181,9 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         int id = item.getItemId();
 
         if (id == R.id.action_refresh) {
-            if(mMenuSelection == MENU_SELECTED_FAVORITE)
-            {
-               fetchFavoriteMoviesFromDB();
-            } else{
+            if (mMenuSelection == MENU_SELECTED_FAVORITE) {
+                fetchFavoriteMoviesFromDB();
+            } else {
                 updateMovieGridView();
             }
             return true;
@@ -212,7 +212,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
     private void displayMovieDetailsUI(int position) {
         Intent movieIntent = new Intent(getActivity(), MovieDetailActivity.class);
-        if(mMovieDetailsArrayList.size() >= position+1) {
+        if (mMovieDetailsArrayList.size() >= position + 1) {
             MovieDetailsObject movieDetails = mMovieDetailsArrayList.get(position);
             movieIntent.putExtra("movieTitle", movieDetails.m_strMovieTitle);
             movieIntent.putExtra("moviePosterFullPath", movieDetails.m_strMoviePosterFullPath);
@@ -311,6 +311,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             super(context, resource);
             mContext = context;
         }
+
         @Override
         public int getCount() {
             int count = 0;
@@ -327,6 +328,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
 
         class ViewHolder {
             final ImageView movieImageView;
+
             ViewHolder(View v) {
                 movieImageView = (ImageView) v.findViewById(R.id.imageView_item);
             }
@@ -344,7 +346,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
             } else {
                 holder = (ViewHolder) row.getTag();
             }
-            if(mMovieDetailsArrayList.size() >= position) {
+            if (mMovieDetailsArrayList.size() >= position) {
                 MovieDetailsObject tempMovieObject = mMovieDetailsArrayList.get(position);
                 holder.movieImageView.setTag(tempMovieObject);
                 int errorResId;
@@ -507,7 +509,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         protected ArrayList<MovieDetailsObject> doInBackground(Object[] params) {
 
             Cursor cursor = getActivity().getContentResolver().query(
-                MovieAppContract.MovieDetailsEntry.CONTENT_URI,
+                    MovieAppContract.MovieDetailsEntry.CONTENT_URI,
                     null,
                     null,
                     null,
@@ -529,7 +531,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                     } while (cursor.moveToNext());
                 }
             } finally {
-                    cursor.close();
+                cursor.close();
             }
             return mMovieDetailsArrayList;
         }

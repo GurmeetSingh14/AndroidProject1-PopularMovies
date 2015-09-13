@@ -5,7 +5,6 @@ import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.content.pm.ProviderInfo;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.test.AndroidTestCase;
 import android.util.Log;
 
@@ -170,12 +169,12 @@ public class TestProvider extends AndroidTestCase {
 
     }
 
-    int m_nMovieId = 1234;
-    String m_strMoviePlot = "PLOT";
-    String m_strMoviePosterFullPath = "POSTER_PATH";
-    String m_strMovieReleaseDate = "Release Date";
-    String m_strMovieTitle = "Movie Title";
-    String m_strMovieUserRating = "User Rating";
+    private final int m_nMovieId = 1234;
+    private final String m_strMoviePlot = "PLOT";
+    private final String m_strMoviePosterFullPath = "POSTER_PATH";
+    private final String m_strMovieReleaseDate = "Release Date";
+    private final String m_strMovieTitle = "Movie Title";
+    private final String m_strMovieUserRating = "User Rating";
 
     private ContentValues getFavoriteMovieValues() {
         ContentValues contentValues = new ContentValues();

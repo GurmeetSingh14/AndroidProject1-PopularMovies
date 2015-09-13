@@ -6,7 +6,6 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.Movie;
 import android.net.Uri;
 import android.util.Log;
 
@@ -18,12 +17,12 @@ public class MovieInfoProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private MovieDbHelper movieDbHelper;
 
-    static final int MOVIE_DETAILS = 100;
-    static final int MOVIE_TRAILERS = 101;
-    static final int MOVIE_REVIEWS = 102;
-    static final int MOVIE_DETAILS_FOR_MOVIE_ID = 103;
-    static final int MOVIE_TRAILERS_FOR_MOVIE_ID = 104;
-    static final int MOVIE_REVIEWS_FOR_MOVIE_ID = 105;
+    private static final int MOVIE_DETAILS = 100;
+    private static final int MOVIE_TRAILERS = 101;
+    private static final int MOVIE_REVIEWS = 102;
+    private static final int MOVIE_DETAILS_FOR_MOVIE_ID = 103;
+    private static final int MOVIE_TRAILERS_FOR_MOVIE_ID = 104;
+    private static final int MOVIE_REVIEWS_FOR_MOVIE_ID = 105;
 
 
     private static final SQLiteQueryBuilder sMovieDetailsByTrailersAndReviewsQueryBuilder;
@@ -338,7 +337,7 @@ public class MovieInfoProvider extends ContentProvider {
 
 
 
-    static UriMatcher buildUriMatcher() {
+    private static UriMatcher buildUriMatcher() {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = MovieAppContract.CONTENT_AUTHORITY;
 

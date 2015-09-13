@@ -29,7 +29,6 @@ import android.widget.ListView;
 import android.widget.ScrollView;
 import android.support.v7.widget.ShareActionProvider;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.gurmeet.popularmoviesapp.data.MovieAppContract;
 import com.example.gurmeet.popularmoviesapp.data.MovieDbHelper;
@@ -567,7 +566,7 @@ public class MovieDetailActivityFragment extends Fragment implements AdapterView
                 String APIKEY_PARAM = "api_key";
                 String APPEND_PARAM = "append_to_response";
 
-                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
+                String api_Key = "API_KEY_GOES_HERE";
                 String appendTrailersReviews = "trailers,reviews";
 
 

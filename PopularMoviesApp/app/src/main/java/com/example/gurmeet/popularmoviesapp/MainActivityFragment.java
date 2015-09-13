@@ -3,7 +3,6 @@ package com.example.gurmeet.popularmoviesapp;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -184,7 +183,12 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         int id = item.getItemId();
 
         if (id == R.id.action_refresh) {
-            updateMovieGridView();
+            if(mMenuSelection == MENU_SELECTED_FAVORITE)
+            {
+               fetchFavoriteMoviesFromDB();
+            } else{
+                updateMovieGridView();
+            }
             return true;
         } else if (id == R.id.action_sort_by_popularity) {
             mMenuSelection = MENU_SELECTED_POPULARITY;
@@ -367,7 +371,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
         protected ArrayList<MovieDetailsObject> doInBackground(Object[] params) {
 
             String movieDBJSONString = null;
-            HttpURLConnection urlConnection = null;
+            HttpURLConnection urlConnection;
             BufferedReader reader = null;
             String LOG_TAG = FetchMovieDetails.class.getSimpleName();
             try {
@@ -377,7 +381,7 @@ public class MainActivityFragment extends Fragment implements AdapterView.OnItem
                 String SORT_PARAM = "sort_by";
                 String APIKEY_PARAM = "api_key";
 
-                String api_Key = "eff5e06e071bf6e65d367677e3368ea9";
+                String api_Key = "API_KEY_GOES_HERE";
 
 
                 Uri builtURI = Uri.parse(BASE_URL).buildUpon()
